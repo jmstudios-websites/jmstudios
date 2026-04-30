@@ -93,13 +93,20 @@ form.addEventListener("submit", async (event) => {
     });
 
     if (!response.ok) {
-      throw new Error("Request failed");
+      let errorMessage = "Request failed";
+      try {
+        const errorBody = await response.json();
+        errorMessage = errorBody.details || errorBody.error || errorMessage;
+      } catch (error) {
+        errorMessage = await response.text();
+      }
+      throw new Error(errorMessage);
     }
 
     form.reset();
     status.textContent = "Message sent. We will respond in 1-2 days.";
   } catch (error) {
-    status.textContent = "Message could not be sent. Please email us directly.";
+    status.textContent = `Message could not be sent: ${error.message || "Please email us directly."}`;
   } finally {
     submitButton.disabled = false;
   }

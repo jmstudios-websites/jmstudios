@@ -66,7 +66,12 @@ Deno.serve(async (request) => {
   });
 
   if (!response.ok) {
-    return jsonResponse(502, { error: "Email could not be sent." });
+    const details = await response.text();
+    console.error("Resend error", response.status, details);
+    return jsonResponse(502, {
+      error: "Email could not be sent.",
+      details,
+    });
   }
 
   return jsonResponse(200, { ok: true });
