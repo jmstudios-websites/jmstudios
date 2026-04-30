@@ -85,7 +85,8 @@ form.addEventListener("submit", async (event) => {
   status.textContent = "Sending your message.";
 
   try {
-    const response = await fetch("/api/contact", {
+    const endpoint = window.JM_CONTACT_ENDPOINT || "/api/contact";
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
