@@ -79,11 +79,13 @@ a {
   display: block;
   width: 38px;
   height: 38px;
+  max-width: 38px;
+  min-width: 38px;
   object-fit: contain;
   border: 0;
   background: transparent;
-  border-radius: 6px;
-  box-shadow: 0 10px 24px rgba(18, 51, 95, 0.22);
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(18, 51, 95, 0.18);
 }
 
 .desktop-nav {
