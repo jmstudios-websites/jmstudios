@@ -1,7 +1,7 @@
 const form = document.querySelector(".contact-form");
 const status = document.querySelector(".form-status");
 const revealItems = document.querySelectorAll(
-  ".split-section, .case-study, .services-section, .process, .contact-section, .service-list article, .process-rail article"
+  ".split-section, .case-study, .services-section, .process, .portfolio-section, .contact-section, .service-list article, .process-rail article, .portfolio-card"
 );
 
 if ("IntersectionObserver" in window) {

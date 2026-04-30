@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=5" />
+    <link rel="stylesheet" href="styles.css?v=7" />
   </head>
   <body>
     <header class="site-header" data-elevate>
@@ -23,11 +23,11 @@
         <span>JM Studios</span>
       </a>
       <nav class="desktop-nav" aria-label="Primary navigation">
-        <a href="#work">Work</a>
         <a href="#services">Services</a>
-        <a href="#process">Process</a>
         <a href="#pricing">Pricing</a>
+        <a href="#process">Process</a>
         <a href="#faq">FAQ</a>
+        <a href="#portfolio">Portfolio</a>
         <a href="#contact">Contact</a>
       </nav>
       <a class="nav-action" href="#contact">Start a project</a>
@@ -306,6 +306,36 @@
         </div>
       </section>
 
+      <section class="portfolio-section" id="portfolio" aria-label="Portfolio examples">
+        <div class="section-shell portfolio-shell">
+          <div class="portfolio-heading">
+            <div>
+              <p class="eyebrow">Portfolio</p>
+              <h2>Browse example builds.</h2>
+            </div>
+          </div>
+
+          <div class="portfolio-stage">
+            <article class="portfolio-card active">
+              <div class="portfolio-browser live-portfolio-browser">
+                <div class="portfolio-browser-top">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <p>Fileo</p>
+                </div>
+                <iframe
+                  class="portfolio-live-frame"
+                  src="portfolio/fileo/index.html"
+                  title="Fileo portfolio site preview"
+                  loading="lazy"
+                ></iframe>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section class="section-shell contact-section" id="contact">
         <div class="contact-copy">
           <p class="eyebrow">Start</p>
@@ -355,11 +385,31 @@
     </main>
 
     <footer class="site-footer">
-      <p>JM Studios</p>
-      <a href="#top">Back to top</a>
+      <div class="footer-main">
+        <a class="footer-brand" href="#top" aria-label="JM Studios home">
+          <img class="brand-mark" src="assets/jm-studios-logo.svg" alt="" aria-hidden="true" />
+          <span>JM Studios</span>
+        </a>
+        <p>Formal websites, managed hosting, domain setup, DNS, SSL, and launch support for small businesses.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="#portfolio">Portfolio</a>
+        <a href="#services">Services</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="footer-actions">
+        <a class="footer-cta" href="#contact">Start a project</a>
+        <a href="terms.html">Terms & Conditions</a>
+        <a href="#top">Back to top</a>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 JM Studios. All rights reserved.</span>
+        <span>Website creation and managed hosting.</span>
+      </div>
     </footer>
 
     <script src="contact-config.js"></script>
-    <script src="script.js?v=8"></script>
+    <script src="script.js?v=13"></script>
   </body>
 </html>
