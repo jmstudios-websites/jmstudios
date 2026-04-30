@@ -13,6 +13,7 @@ const annotationNoteInput = document.querySelector("#annotationNoteInput");
 const previewNotesInput = document.querySelector("#previewNotesInput");
 const feedbackStatus = document.querySelector("#feedbackStatus");
 const clientAnnotationList = document.querySelector("#clientAnnotationList");
+const clientFileRequestList = document.querySelector("#clientFileRequestList");
 let previewObjectUrls = [];
 let activeProject = null;
 let annotationMode = false;
@@ -131,6 +132,7 @@ function renderProject(project) {
   renderSetupChecks(setupChecks);
   renderPreview(project);
   renderFeedback(project);
+  renderFileRequests(project);
 }
 
 function renderTasks(tasks) {
@@ -545,6 +547,48 @@ function renderFeedback(project) {
     : `<p class="empty-feedback">No preview annotations yet.</p>`;
 }
 
+function renderFileRequests(project) {
+  const requests = project.fileRequests || [];
+  clientFileRequestList.innerHTML = requests.length
+    ? ""
+    : `<p class="empty-feedback">No file requests yet.</p>`;
+
+  requests.forEach((request) => {
+    const row = document.createElement("article");
+    row.className = "client-file-request";
+    row.dataset.requestId = request.id;
+    const uploads = request.uploads || [];
+    row.innerHTML = `
+      <div class="request-copy">
+        <strong>${escapeHtml(request.title || "File request")}</strong>
+        <p>${escapeHtml(request.description || "Upload any useful files for the project.")}</p>
+      </div>
+      <label class="file-import-button secondary-import">
+        Add files
+        <input data-file-upload type="file" multiple />
+      </label>
+      <label>
+        Notes for JM Studios
+        <textarea data-file-note rows="3" placeholder="Add context, links, or instructions for these files.">${escapeHtml(request.note || "")}</textarea>
+      </label>
+      <div class="composer-actions">
+        <button class="solid-button" data-save-files type="button">Save files</button>
+        <p class="portal-status" data-file-status role="status" aria-live="polite"></p>
+      </div>
+      <div class="uploaded-file-list">
+        ${uploads.map((file) => `
+          <a class="uploaded-file" href="${escapeAttr(file.dataUrl)}" download="${escapeAttr(file.name)}">
+            <span>${escapeHtml(file.name)}</span>
+            <small>${escapeHtml(readableFileSize(file.size))}</small>
+          </a>
+        `).join("")}
+      </div>
+    `;
+    row.querySelector("[data-save-files]").addEventListener("click", () => saveFileRequest(row));
+    clientFileRequestList.append(row);
+  });
+}
+
 function setFeedbackStatus(message) {
   feedbackStatus.textContent = message;
   window.clearTimeout(setFeedbackStatus.timer);
@@ -560,6 +604,7 @@ function saveProjectFeedback(updater) {
     ...activeProject,
     previewNotes: nextProject.previewNotes || "",
     annotations: nextProject.annotations || [],
+    fileRequests: nextProject.fileRequests || [],
   };
 
   if (slug && annotationsProject) {
@@ -572,7 +617,60 @@ function saveProjectFeedback(updater) {
   }
 
   renderFeedback(activeProject);
+  renderFileRequests(activeProject);
   renderPreview(activeProject);
+}
+
+async function saveFileRequest(row) {
+  const requestId = row.dataset.requestId;
+  const status = row.querySelector("[data-file-status]");
+  const note = row.querySelector("[data-file-note]").value.trim();
+  const input = row.querySelector("[data-file-upload]");
+  const selectedFiles = [...input.files].filter((file) => !file.name.startsWith("."));
+
+  status.textContent = "Saving files.";
+
+  try {
+    const uploads = await Promise.all(selectedFiles.map(readDashboardFile));
+    saveProjectFeedback((project) => ({
+      ...project,
+      fileRequests: (project.fileRequests || []).map((request) => {
+        if (request.id !== requestId) return request;
+        return {
+          ...request,
+          note,
+          uploads: [...(request.uploads || []), ...uploads],
+        };
+      }),
+    }));
+    input.value = "";
+    setFeedbackStatus(selectedFiles.length ? "Files saved." : "Note saved.");
+  } catch (error) {
+    status.textContent = "Those files could not be saved here. Try fewer or smaller files.";
+  }
+}
+
+function readDashboardFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve({
+        id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${file.name}`,
+        name: file.name,
+        type: file.type || "application/octet-stream",
+        size: file.size,
+        dataUrl: reader.result,
+        uploadedAt: new Date().toISOString(),
+      });
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+function readableFileSize(bytes = 0) {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 toggleAnnotationButton.addEventListener("click", () => {

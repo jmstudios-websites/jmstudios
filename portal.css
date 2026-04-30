@@ -368,6 +368,7 @@ textarea:focus {
 
 .task-editor,
 .setup-editor,
+.file-request-editor,
 .website-preview-editor,
 .share-panel {
   border-top: 1px solid var(--line);
@@ -383,6 +384,7 @@ textarea:focus {
 .client-task-list,
 .setup-list,
 .client-setup-list,
+.file-request-list,
 .dashboard-side {
   display: grid;
   gap: 8px;
@@ -412,6 +414,81 @@ textarea:focus {
   border: 0;
   border-radius: 0;
   background: transparent;
+}
+
+.helper-copy {
+  max-width: 760px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.file-request-row,
+.client-file-request {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(217, 224, 234, 0.9);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.78);
+  padding: 14px;
+}
+
+.file-request-row {
+  grid-template-columns: minmax(220px, 0.9fr) minmax(260px, 1.1fr) auto;
+  align-items: start;
+}
+
+.request-fields,
+.request-response,
+.request-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.request-copy strong,
+.request-response strong {
+  color: var(--navy-deep);
+  font-size: 14px;
+}
+
+.request-copy p,
+.request-response p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.uploaded-file-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.uploaded-file {
+  display: inline-grid;
+  gap: 2px;
+  max-width: 240px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(232, 238, 246, 0.72);
+  padding: 9px 10px;
+}
+
+.uploaded-file span {
+  overflow: hidden;
+  color: var(--navy-deep);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.uploaded-file small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .setup-row strong,
@@ -977,6 +1054,21 @@ textarea:focus {
   align-self: center;
 }
 
+.project-files-panel {
+  align-content: start;
+}
+
+.client-file-request label {
+  font-size: 12px;
+}
+
+.client-file-request .file-import-button {
+  width: fit-content;
+}
+
+.client-file-request .composer-actions {
+  justify-content: flex-start;
+}
 
 .dashboard-hero {
   align-items: stretch;
@@ -1146,7 +1238,8 @@ textarea:focus {
 
   .form-grid,
   .task-row,
-  .setup-row {
+  .setup-row,
+  .file-request-row {
     grid-template-columns: 1fr;
   }
 

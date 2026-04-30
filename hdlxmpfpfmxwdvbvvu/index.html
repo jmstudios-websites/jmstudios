@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="portal.css?v=2" />
+    <link rel="stylesheet" href="portal.css?v=3" />
   </head>
   <body class="admin-body is-locked">
     <header class="portal-topbar">
@@ -137,6 +137,21 @@
             </div>
           </section>
 
+          <section class="file-request-editor compact-section" aria-labelledby="fileRequestEditorTitle">
+            <div class="section-row">
+              <div>
+                <p class="eyebrow">Client files</p>
+                <h3 id="fileRequestEditorTitle">Upload requests</h3>
+              </div>
+              <button class="text-button" id="addFileRequest" type="button">Add request</button>
+            </div>
+            <p class="helper-copy">
+              Ask the client for logos, fonts, an existing site folder, brand photos, or any files you need.
+              Their uploads show here after they save them from the dashboard.
+            </p>
+            <div class="file-request-list admin-request-list" id="fileRequestList"></div>
+          </section>
+
           <section class="website-preview-editor compact-section" aria-labelledby="websitePreviewTitle">
             <div class="section-row preview-heading-row">
               <div>
@@ -199,6 +214,6 @@
       </section>
     </main>
 
-    <script src="admin.js?v=2"></script>
+    <script src="admin.js?v=3"></script>
   </body>
 </html>

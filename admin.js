@@ -23,6 +23,7 @@ const form = document.querySelector("#projectForm");
 const projectList = document.querySelector("#projectList");
 const taskList = document.querySelector("#taskList");
 const setupList = document.querySelector("#setupList");
+const fileRequestList = document.querySelector("#fileRequestList");
 const statusEl = document.querySelector("#portalStatus");
 const dashboardLink = document.querySelector("#dashboardLink");
 const openDashboard = document.querySelector("#openDashboard");
@@ -49,6 +50,30 @@ const starterTasks = [
   { title: "Homepage direction", state: "Not started" },
   { title: "Responsive build", state: "Not started" },
   { title: "Launch checks", state: "Not started" },
+];
+
+const starterFileRequests = [
+  {
+    id: "logo-files",
+    title: "Logo files",
+    description: "Upload the best logo files you have, preferably SVG, PNG, or PDF.",
+    uploads: [],
+    note: "",
+  },
+  {
+    id: "brand-fonts",
+    title: "Fonts or brand assets",
+    description: "Upload font files, color notes, style guides, or brand photos if you have them.",
+    uploads: [],
+    note: "",
+  },
+  {
+    id: "existing-website",
+    title: "Existing website files",
+    description: "Upload any existing website export, screenshots, copy, or pages we should reuse.",
+    uploads: [],
+    note: "",
+  },
 ];
 
 const defaultSetupChecks = [
@@ -217,6 +242,7 @@ function createProject() {
     previewSize: "desktop",
     previewNotes: "",
     annotations: [],
+    fileRequests: starterFileRequests,
     updatedAt: new Date().toISOString(),
   };
 
@@ -243,6 +269,16 @@ function projectFromForm() {
       title: row.querySelector("[data-task-title]").value.trim(),
       state: row.querySelector("[data-task-state]").value,
     })).filter((task) => task.title),
+    fileRequests: [...fileRequestList.querySelectorAll(".file-request-row")].map((row) => {
+      const saved = getActiveProject().fileRequests?.find((request) => request.id === row.dataset.requestId);
+      return {
+        id: row.dataset.requestId,
+        title: row.querySelector("[data-request-title]").value.trim(),
+        description: row.querySelector("[data-request-description]").value.trim(),
+        uploads: saved?.uploads || [],
+        note: saved?.note || "",
+      };
+    }).filter((request) => request.title),
     previewRoute: previewRoute.value,
     previewSize: browserPreviewShell.dataset.size || "desktop",
     updatedAt: new Date().toISOString(),
@@ -262,6 +298,7 @@ function fillForm(project) {
   editorTitle.textContent = project.projectName || "New client dashboard";
   renderSetupChecks(normalizeSetupChecks(project.setupChecks));
   renderTasks(project.tasks || []);
+  renderFileRequests(project.fileRequests || []);
   renderPreview(project);
   renderClientFeedback(project);
 }
@@ -319,6 +356,40 @@ function addTaskRow(task = { title: "", state: "Not started" }) {
   `;
   row.querySelector("button").addEventListener("click", () => row.remove());
   taskList.append(row);
+}
+
+function renderFileRequests(requests) {
+  fileRequestList.innerHTML = "";
+  const normalizedRequests = requests.length ? requests : starterFileRequests;
+  normalizedRequests.forEach((request) => addFileRequestRow(request));
+}
+
+function addFileRequestRow(request = {}) {
+  const row = document.createElement("article");
+  row.className = "file-request-row";
+  row.dataset.requestId = request.id || uid();
+  const uploads = request.uploads || [];
+  row.innerHTML = `
+    <div class="request-fields">
+      <input data-request-title type="text" value="${escapeAttr(request.title || "New file request")}" aria-label="File request title" />
+      <input data-request-description type="text" value="${escapeAttr(request.description || "Describe what the client should upload.")}" aria-label="File request description" />
+    </div>
+    <div class="request-response">
+      <strong>${uploads.length ? `${uploads.length} file${uploads.length === 1 ? "" : "s"} uploaded` : "No files uploaded yet"}</strong>
+      ${request.note ? `<p>${escapeHtml(request.note)}</p>` : `<p>No client note yet.</p>`}
+      <div class="uploaded-file-list">
+        ${uploads.map((file) => `
+          <a class="uploaded-file" href="${escapeAttr(file.dataUrl)}" download="${escapeAttr(file.name)}">
+            <span>${escapeHtml(file.name)}</span>
+            <small>${escapeHtml(readableFileSize(file.size))}</small>
+          </a>
+        `).join("")}
+      </div>
+    </div>
+    <button class="text-button danger" type="button">Remove</button>
+  `;
+  row.querySelector("button").addEventListener("click", () => row.remove());
+  fileRequestList.append(row);
 }
 
 function renderClientFeedback(project) {
@@ -772,6 +843,15 @@ form.slug.addEventListener("input", () => {
 
 document.querySelector("#newProject").addEventListener("click", createProject);
 document.querySelector("#addTask").addEventListener("click", () => addTaskRow());
+document.querySelector("#addFileRequest").addEventListener("click", () => {
+  addFileRequestRow({
+    id: uid(),
+    title: "New file request",
+    description: "Describe what the client should upload.",
+    uploads: [],
+    note: "",
+  });
+});
 document.querySelector("#addSetupCheck").addEventListener("click", () => {
   const key = `custom-${randomToken(6)}`;
   renderSetupChecks([
