@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="portal.css?v=1" />
+    <link rel="stylesheet" href="portal.css?v=2" />
   </head>
   <body class="admin-body is-locked">
     <header class="portal-topbar">
@@ -179,12 +179,26 @@
               </div>
               <iframe id="websitePreviewFrame" title="Imported website preview" sandbox="allow-scripts allow-forms allow-popups"></iframe>
             </div>
+
+            <div class="admin-feedback-panel" aria-label="Client preview feedback">
+              <div class="section-row">
+                <div>
+                  <p class="eyebrow">Client feedback</p>
+                  <h3>Preview notes and annotations</h3>
+                </div>
+              </div>
+              <article class="feedback-note-card">
+                <strong>General preview notes</strong>
+                <p id="adminPreviewNotes">No preview notes yet.</p>
+              </article>
+              <div class="annotation-list" id="adminAnnotationList"></div>
+            </div>
           </section>
           <p class="portal-status" id="portalStatus" role="status" aria-live="polite"></p>
         </form>
       </section>
     </main>
 
-    <script src="admin.js?v=1"></script>
+    <script src="admin.js?v=2"></script>
   </body>
 </html>

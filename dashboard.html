@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="portal.css?v=1" />
+    <link rel="stylesheet" href="portal.css?v=2" />
   </head>
   <body class="dashboard-body client-dashboard-body">
     <header class="portal-topbar client-topbar">
@@ -81,13 +81,38 @@
               <article class="mock-site-preview" id="preview">
                 <div class="mock-preview-top">
                   <span id="livePreviewAddress">Preview URL not set</span>
-                  <a class="hidden" id="openPreviewLink" href="#" target="_blank" rel="noreferrer">Open</a>
+                  <div class="preview-actions">
+                    <button class="text-button hidden" id="toggleAnnotation" type="button">Annotate</button>
+                    <a class="hidden" id="openPreviewLink" href="#" target="_blank" rel="noreferrer">Open</a>
+                  </div>
                 </div>
                 <div class="preview-empty" id="livePreviewEmpty">
                   <strong>Preview is not ready yet.</strong>
                   <p>JM Studios will add the website preview here when there is a build ready to test.</p>
                 </div>
                 <iframe id="livePreviewFrame" class="hidden" title="Website preview"></iframe>
+                <div class="annotation-composer hidden" id="annotationComposer">
+                  <div>
+                    <strong id="annotationTargetLabel">Selected element</strong>
+                    <p>Write what should change or what you noticed.</p>
+                  </div>
+                  <textarea id="annotationNoteInput" rows="3" placeholder="Example: Make this headline shorter, change this photo, or fix this button."></textarea>
+                  <div class="composer-actions">
+                    <button class="solid-button" id="saveAnnotation" type="button">Save note</button>
+                    <button class="text-button" id="cancelAnnotation" type="button">Cancel</button>
+                  </div>
+                </div>
+                <div class="preview-feedback">
+                  <label>
+                    Preview notes
+                    <textarea id="previewNotesInput" rows="4" placeholder="Write general thoughts about the preview here."></textarea>
+                  </label>
+                  <div class="composer-actions">
+                    <button class="solid-button" id="savePreviewNotes" type="button">Save preview notes</button>
+                    <p class="portal-status" id="feedbackStatus" role="status" aria-live="polite"></p>
+                  </div>
+                  <div class="annotation-list" id="clientAnnotationList"></div>
+                </div>
               </article>
 
               <article class="mock-dashboard-list" id="checklist">
@@ -115,6 +140,6 @@
       </section>
     </main>
 
-    <script src="dashboard.js?v=1"></script>
+    <script src="dashboard.js?v=2"></script>
   </body>
 </html>

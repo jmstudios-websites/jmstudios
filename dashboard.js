@@ -6,8 +6,17 @@ const passwordForm = document.querySelector("#passwordForm");
 const statusEl = document.querySelector("#dashboardStatus");
 const accessPanel = document.querySelector("#accessPanel");
 const dashboard = document.querySelector("#clientDashboard");
+const toggleAnnotationButton = document.querySelector("#toggleAnnotation");
+const annotationComposer = document.querySelector("#annotationComposer");
+const annotationTargetLabel = document.querySelector("#annotationTargetLabel");
+const annotationNoteInput = document.querySelector("#annotationNoteInput");
+const previewNotesInput = document.querySelector("#previewNotesInput");
+const feedbackStatus = document.querySelector("#feedbackStatus");
+const clientAnnotationList = document.querySelector("#clientAnnotationList");
 let previewObjectUrls = [];
 let activeProject = null;
+let annotationMode = false;
+let pendingAnnotation = null;
 const readyStates = ["Connected", "Verified", "Active", "Tested", "Ready", "Done", "Complete"];
 const workingStates = ["Connecting", "Checking", "Activating", "Setting up", "Testing", "Reviewing", "In progress"];
 
@@ -121,6 +130,7 @@ function renderProject(project) {
   renderTasks(tasks);
   renderSetupChecks(setupChecks);
   renderPreview(project);
+  renderFeedback(project);
 }
 
 function renderTasks(tasks) {
@@ -172,10 +182,12 @@ function renderPreview(project) {
     const htmlFiles = bundle.files.filter((file) => isHtmlPath(file.path));
     const routes = htmlFiles.length ? htmlFiles : [bundle.files[0]];
     const route = routes.some((file) => file.path === project.previewRoute) ? project.previewRoute : routes[0].path;
-    previewFrame.srcdoc = buildPreviewDocument(bundle, route);
+    previewFrame.srcdoc = buildPreviewDocument(bundle, route, project.annotations || [], true);
     previewFrame.classList.remove("hidden");
     previewEmpty.classList.add("hidden");
     previewAddress.textContent = displayPath(route, bundle.name);
+    toggleAnnotationButton.classList.remove("hidden");
+    setAnnotationMode(false);
     previewLink.classList.add("hidden");
     return;
   }
@@ -187,6 +199,8 @@ function renderPreview(project) {
     previewAddress.textContent = previewUrl;
     previewLink.href = previewUrl;
     previewLink.classList.remove("hidden");
+    toggleAnnotationButton.classList.add("hidden");
+    setAnnotationMode(false);
     return;
   }
 
@@ -194,6 +208,8 @@ function renderPreview(project) {
   previewEmpty.classList.remove("hidden");
   previewAddress.textContent = "Preview URL not set";
   previewLink.classList.add("hidden");
+  toggleAnnotationButton.classList.add("hidden");
+  setAnnotationMode(false);
 }
 
 function stateClass(state = "") {
@@ -207,7 +223,7 @@ function clearPreviewObjectUrls() {
   previewObjectUrls = [];
 }
 
-function buildPreviewDocument(bundle, route) {
+function buildPreviewDocument(bundle, route, annotations = [], allowAnnotations = false) {
   const fileMap = new Map(bundle.files.map((file) => [file.path, file]));
   const urlMap = new Map();
 
@@ -232,7 +248,7 @@ function buildPreviewDocument(bundle, route) {
     return previewFallbackDocument("Select an HTML file to preview this website.");
   }
 
-  return rewriteHtml(dataUrlToText(routeFile.dataUrl), routeFile.path, urlMap, bundle);
+  return rewriteHtml(dataUrlToText(routeFile.dataUrl), routeFile.path, urlMap, bundle, annotations, allowAnnotations);
 }
 
 function objectUrlFromDataUrl(dataUrl, type) {
@@ -251,7 +267,7 @@ function dataUrlToText(dataUrl) {
   return new TextDecoder().decode(bytes);
 }
 
-function rewriteHtml(html, htmlPath, urlMap, bundle) {
+function rewriteHtml(html, htmlPath, urlMap, bundle, annotations = [], allowAnnotations = false) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
   const attrs = [
@@ -275,17 +291,144 @@ function rewriteHtml(html, htmlPath, urlMap, bundle) {
   });
 
   doc.querySelectorAll("[srcset]").forEach((node) => node.removeAttribute("srcset"));
+  injectPreviewBridge(doc, htmlPath, annotations, allowAnnotations);
+  return `<!doctype html>${doc.documentElement.outerHTML}`;
+}
+
+function injectPreviewBridge(doc, route, annotations = [], allowAnnotations = false) {
+  const routeAnnotations = annotations.filter((annotation) => annotation.route === route);
+  const style = doc.createElement("style");
+  style.textContent = `
+    .jm-annotation-hover {
+      outline: 3px solid #2f80ed !important;
+      outline-offset: 2px !important;
+      cursor: crosshair !important;
+    }
+    .jm-annotation-box {
+      position: absolute;
+      z-index: 2147483000;
+      border: 3px solid #2f80ed;
+      border-radius: 6px;
+      background: rgba(47, 128, 237, 0.1);
+      box-shadow: 0 12px 34px rgba(18, 51, 95, 0.18);
+      pointer-events: none;
+    }
+    .jm-annotation-pin {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: #2f80ed;
+      color: #fff;
+      font: 800 12px/1 system-ui, sans-serif;
+    }
+  `;
+  doc.head.append(style);
+
   const routeScript = doc.createElement("script");
   routeScript.textContent = `
-    document.addEventListener("click", function(event) {
-      var link = event.target.closest("[data-preview-route]");
-      if (!link) return;
-      event.preventDefault();
-      parent.postMessage({ type: "jm-preview-route", route: link.dataset.previewRoute }, "*");
-    });
+    (function() {
+      var annotations = ${jsonForScript(routeAnnotations)};
+      var annotationMode = false;
+      var activeElement = null;
+
+      function pageSize() {
+        var doc = document.documentElement;
+        var body = document.body || doc;
+        return {
+          width: Math.max(doc.scrollWidth, body.scrollWidth, window.innerWidth, 1),
+          height: Math.max(doc.scrollHeight, body.scrollHeight, window.innerHeight, 1)
+        };
+      }
+
+      function drawAnnotations() {
+        document.querySelectorAll(".jm-annotation-box").forEach(function(node) {
+          node.remove();
+        });
+        var size = pageSize();
+        annotations.forEach(function(annotation, index) {
+          var box = document.createElement("div");
+          box.className = "jm-annotation-box";
+          box.style.left = (annotation.x * size.width) + "px";
+          box.style.top = (annotation.y * size.height) + "px";
+          box.style.width = Math.max(28, annotation.width * size.width) + "px";
+          box.style.height = Math.max(22, annotation.height * size.height) + "px";
+          box.title = annotation.note || annotation.label || "Annotation";
+          var pin = document.createElement("span");
+          pin.className = "jm-annotation-pin";
+          pin.textContent = String(index + 1);
+          box.append(pin);
+          document.body.append(box);
+        });
+      }
+
+      function clearHover() {
+        if (activeElement) activeElement.classList.remove("jm-annotation-hover");
+        activeElement = null;
+      }
+
+      document.addEventListener("click", function(event) {
+        var link = event.target.closest("[data-preview-route]");
+        if (link && !annotationMode) {
+          event.preventDefault();
+          parent.postMessage({ type: "jm-preview-route", route: link.dataset.previewRoute }, "*");
+          return;
+        }
+
+        if (!annotationMode) return;
+        var target = event.target.closest("body *");
+        if (!target || target.classList.contains("jm-annotation-box") || target.classList.contains("jm-annotation-pin")) return;
+        event.preventDefault();
+        event.stopPropagation();
+        var rect = target.getBoundingClientRect();
+        var size = pageSize();
+        parent.postMessage({
+          type: "jm-preview-annotation-target",
+          annotation: {
+            route: ${jsonForScript(route)},
+            label: target.getAttribute("aria-label") || target.innerText?.trim().slice(0, 70) || target.tagName.toLowerCase(),
+            x: (rect.left + window.scrollX) / size.width,
+            y: (rect.top + window.scrollY) / size.height,
+            width: rect.width / size.width,
+            height: rect.height / size.height
+          }
+        }, "*");
+      }, true);
+
+      ${allowAnnotations ? `
+      document.addEventListener("mouseover", function(event) {
+        if (!annotationMode) return;
+        var target = event.target.closest("body *");
+        if (!target || target.classList.contains("jm-annotation-box") || target.classList.contains("jm-annotation-pin")) return;
+        clearHover();
+        activeElement = target;
+        activeElement.classList.add("jm-annotation-hover");
+      }, true);
+
+      document.addEventListener("mouseout", function(event) {
+        if (!annotationMode || event.relatedTarget === activeElement) return;
+        clearHover();
+      }, true);
+
+      window.addEventListener("message", function(event) {
+        if (event.data?.type !== "jm-annotation-mode") return;
+        annotationMode = Boolean(event.data.active);
+        document.body.style.cursor = annotationMode ? "crosshair" : "";
+        if (!annotationMode) clearHover();
+      });
+      ` : ""}
+
+      window.addEventListener("resize", drawAnnotations);
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", drawAnnotations);
+      else drawAnnotations();
+    })();
   `;
   doc.body.append(routeScript);
-  return `<!doctype html>${doc.documentElement.outerHTML}`;
 }
 
 function rewriteCss(css, cssPath, urlMap) {
@@ -366,8 +509,132 @@ function escapeHtml(value = "") {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
-window.addEventListener("message", (event) => {
-  if (event.data?.type !== "jm-preview-route" || !activeProject) return;
-  activeProject = { ...activeProject, previewRoute: event.data.route };
+function jsonForScript(value) {
+  return JSON.stringify(value).replaceAll("<", "\\u003c");
+}
+
+function escapeAttr(value = "") {
+  return escapeHtml(value).replaceAll('"', "&quot;");
+}
+
+function setAnnotationMode(active) {
+  annotationMode = active;
+  toggleAnnotationButton.classList.toggle("active", active);
+  toggleAnnotationButton.textContent = active ? "Click an element" : "Annotate";
+  const frameWindow = document.querySelector("#livePreviewFrame").contentWindow;
+  if (frameWindow) frameWindow.postMessage({ type: "jm-annotation-mode", active }, "*");
+}
+
+function renderFeedback(project) {
+  previewNotesInput.value = project.previewNotes || "";
+  const annotations = project.annotations || [];
+  clientAnnotationList.innerHTML = annotations.length
+    ? annotations
+        .map(
+          (annotation, index) => `
+            <article class="annotation-item">
+              <span>${index + 1}</span>
+              <div>
+                <strong>${escapeHtml(annotation.label || "Selected element")}</strong>
+                <p>${escapeHtml(annotation.note || "")}</p>
+              </div>
+            </article>
+          `
+        )
+        .join("")
+    : `<p class="empty-feedback">No preview annotations yet.</p>`;
+}
+
+function setFeedbackStatus(message) {
+  feedbackStatus.textContent = message;
+  window.clearTimeout(setFeedbackStatus.timer);
+  setFeedbackStatus.timer = window.setTimeout(() => {
+    feedbackStatus.textContent = "";
+  }, 2600);
+}
+
+function saveProjectFeedback(updater) {
+  const annotationsProject = findStoredProject(slug);
+  const nextProject = updater({ ...(annotationsProject || activeProject) });
+  activeProject = {
+    ...activeProject,
+    previewNotes: nextProject.previewNotes || "",
+    annotations: nextProject.annotations || [],
+  };
+
+  if (slug && annotationsProject) {
+    const projects = JSON.parse(localStorage.getItem(storageKey)) || [];
+    const index = projects.findIndex((project) => project.slug === slug);
+    if (index >= 0) {
+      projects[index] = { ...projects[index], ...nextProject };
+      localStorage.setItem(storageKey, JSON.stringify(projects));
+    }
+  }
+
+  renderFeedback(activeProject);
   renderPreview(activeProject);
+}
+
+toggleAnnotationButton.addEventListener("click", () => {
+  setAnnotationMode(!annotationMode);
+  if (!annotationMode) annotationComposer.classList.add("hidden");
+});
+
+document.querySelector("#cancelAnnotation").addEventListener("click", () => {
+  pendingAnnotation = null;
+  annotationNoteInput.value = "";
+  annotationComposer.classList.add("hidden");
+});
+
+document.querySelector("#saveAnnotation").addEventListener("click", () => {
+  const note = annotationNoteInput.value.trim();
+  if (!pendingAnnotation || !note) {
+    setFeedbackStatus("Write a note before saving the annotation.");
+    return;
+  }
+
+  saveProjectFeedback((project) => ({
+    ...project,
+    annotations: [
+      ...(project.annotations || []),
+      {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        ...pendingAnnotation,
+        note,
+        createdAt: new Date().toISOString(),
+      },
+    ],
+  }));
+
+  pendingAnnotation = null;
+  annotationNoteInput.value = "";
+  annotationComposer.classList.add("hidden");
+  setFeedbackStatus("Annotation saved.");
+});
+
+document.querySelector("#savePreviewNotes").addEventListener("click", () => {
+  saveProjectFeedback((project) => ({
+    ...project,
+    previewNotes: previewNotesInput.value.trim(),
+  }));
+  setFeedbackStatus("Preview notes saved.");
+});
+
+window.addEventListener("message", (event) => {
+  if (!activeProject) return;
+
+  if (event.data?.type === "jm-preview-route") {
+    activeProject = { ...activeProject, previewRoute: event.data.route };
+    renderPreview(activeProject);
+    return;
+  }
+
+  if (event.data?.type === "jm-preview-annotation-target") {
+    pendingAnnotation = event.data.annotation;
+    annotationTargetLabel.textContent = pendingAnnotation.label || "Selected element";
+    annotationNoteInput.value = "";
+    annotationComposer.classList.remove("hidden");
+    setAnnotationMode(false);
+    annotationNoteInput.focus();
+  }
 });

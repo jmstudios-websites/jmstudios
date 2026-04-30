@@ -34,6 +34,8 @@ const previewFrame = document.querySelector("#websitePreviewFrame");
 const previewEmpty = document.querySelector("#previewEmpty");
 const previewAddress = document.querySelector("#previewAddress");
 const browserPreviewShell = document.querySelector("#browserPreviewShell");
+const adminPreviewNotes = document.querySelector("#adminPreviewNotes");
+const adminAnnotationList = document.querySelector("#adminAnnotationList");
 
 installAdminGate();
 
@@ -213,6 +215,8 @@ function createProject() {
     previewBundle: null,
     previewRoute: "",
     previewSize: "desktop",
+    previewNotes: "",
+    annotations: [],
     updatedAt: new Date().toISOString(),
   };
 
@@ -259,6 +263,7 @@ function fillForm(project) {
   renderSetupChecks(normalizeSetupChecks(project.setupChecks));
   renderTasks(project.tasks || []);
   renderPreview(project);
+  renderClientFeedback(project);
 }
 
 function normalizeSetupChecks(checks = []) {
@@ -316,6 +321,27 @@ function addTaskRow(task = { title: "", state: "Not started" }) {
   taskList.append(row);
 }
 
+function renderClientFeedback(project) {
+  const annotations = project.annotations || [];
+  adminPreviewNotes.textContent = project.previewNotes || "No preview notes yet.";
+  adminAnnotationList.innerHTML = annotations.length
+    ? annotations
+        .map(
+          (annotation, index) => `
+            <article class="annotation-item">
+              <span>${index + 1}</span>
+              <div>
+                <strong>${escapeHtml(annotation.label || "Selected element")}</strong>
+                <p>${escapeHtml(annotation.note || "")}</p>
+                <small>${escapeHtml(displayPath(annotation.route || project.previewRoute || "", project.previewBundle?.name || ""))}</small>
+              </div>
+            </article>
+          `
+        )
+        .join("")
+    : `<p class="empty-feedback">No annotations from this client yet.</p>`;
+}
+
 function escapeAttr(value = "") {
   return value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
 }
@@ -363,6 +389,9 @@ function renderDashboardAccess(project) {
 }
 
 function render() {
+  const latestProjects = loadProjects();
+  if (latestProjects.length) projects = latestProjects;
+  if (!projects.some((project) => project.id === activeId)) activeId = projects[0]?.id || null;
   if (!projects.length) createProject();
   const project = getActiveProject();
   renderList();
@@ -461,7 +490,7 @@ function renderPreview(project) {
   previewAddress.textContent = displayPath(route, bundle.name);
   previewEmpty.classList.add("hidden");
   previewFrame.classList.remove("hidden");
-  previewFrame.srcdoc = buildPreviewDocument(bundle, route);
+  previewFrame.srcdoc = buildPreviewDocument(bundle, route, project.annotations || []);
 }
 
 function clearPreviewObjectUrls() {
@@ -469,7 +498,7 @@ function clearPreviewObjectUrls() {
   previewObjectUrls = [];
 }
 
-function buildPreviewDocument(bundle, route) {
+function buildPreviewDocument(bundle, route, annotations = []) {
   const fileMap = new Map(bundle.files.map((file) => [file.path, file]));
   const urlMap = new Map();
 
@@ -494,7 +523,7 @@ function buildPreviewDocument(bundle, route) {
     return previewFallbackDocument("Select an HTML file to preview this website.");
   }
 
-  return rewriteHtml(dataUrlToText(routeFile.dataUrl), routeFile.path, urlMap, bundle);
+  return rewriteHtml(dataUrlToText(routeFile.dataUrl), routeFile.path, urlMap, bundle, annotations);
 }
 
 function objectUrlFromDataUrl(dataUrl, type) {
@@ -513,7 +542,7 @@ function dataUrlToText(dataUrl) {
   return new TextDecoder().decode(bytes);
 }
 
-function rewriteHtml(html, htmlPath, urlMap, bundle) {
+function rewriteHtml(html, htmlPath, urlMap, bundle, annotations = []) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
   const attrs = [
@@ -537,17 +566,88 @@ function rewriteHtml(html, htmlPath, urlMap, bundle) {
   });
 
   doc.querySelectorAll("[srcset]").forEach((node) => node.removeAttribute("srcset"));
+  injectPreviewBridge(doc, htmlPath, annotations);
+  return `<!doctype html>${doc.documentElement.outerHTML}`;
+}
+
+function injectPreviewBridge(doc, route, annotations = []) {
+  const routeAnnotations = annotations.filter((annotation) => annotation.route === route);
+  const style = doc.createElement("style");
+  style.textContent = `
+    .jm-annotation-box {
+      position: absolute;
+      z-index: 2147483000;
+      border: 3px solid #2f80ed;
+      border-radius: 6px;
+      background: rgba(47, 128, 237, 0.1);
+      box-shadow: 0 12px 34px rgba(18, 51, 95, 0.18);
+      pointer-events: none;
+    }
+    .jm-annotation-pin {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: #2f80ed;
+      color: #fff;
+      font: 800 12px/1 system-ui, sans-serif;
+    }
+  `;
+  doc.head.append(style);
+
   const routeScript = doc.createElement("script");
   routeScript.textContent = `
-    document.addEventListener("click", function(event) {
-      var link = event.target.closest("[data-preview-route]");
-      if (!link) return;
-      event.preventDefault();
-      parent.postMessage({ type: "jm-preview-route", route: link.dataset.previewRoute }, "*");
-    });
+    (function() {
+      var annotations = ${jsonForScript(routeAnnotations)};
+
+      function pageSize() {
+        var doc = document.documentElement;
+        var body = document.body || doc;
+        return {
+          width: Math.max(doc.scrollWidth, body.scrollWidth, window.innerWidth, 1),
+          height: Math.max(doc.scrollHeight, body.scrollHeight, window.innerHeight, 1)
+        };
+      }
+
+      function drawAnnotations() {
+        document.querySelectorAll(".jm-annotation-box").forEach(function(node) {
+          node.remove();
+        });
+        var size = pageSize();
+        annotations.forEach(function(annotation, index) {
+          var box = document.createElement("div");
+          box.className = "jm-annotation-box";
+          box.style.left = (annotation.x * size.width) + "px";
+          box.style.top = (annotation.y * size.height) + "px";
+          box.style.width = Math.max(28, annotation.width * size.width) + "px";
+          box.style.height = Math.max(22, annotation.height * size.height) + "px";
+          box.title = annotation.note || annotation.label || "Annotation";
+          var pin = document.createElement("span");
+          pin.className = "jm-annotation-pin";
+          pin.textContent = String(index + 1);
+          box.append(pin);
+          document.body.append(box);
+        });
+      }
+
+      document.addEventListener("click", function(event) {
+        var link = event.target.closest("[data-preview-route]");
+        if (!link) return;
+        event.preventDefault();
+        parent.postMessage({ type: "jm-preview-route", route: link.dataset.previewRoute }, "*");
+      });
+
+      window.addEventListener("resize", drawAnnotations);
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", drawAnnotations);
+      else drawAnnotations();
+    })();
   `;
   doc.body.append(routeScript);
-  return `<!doctype html>${doc.documentElement.outerHTML}`;
 }
 
 function rewriteCss(css, cssPath, urlMap) {
@@ -636,6 +736,10 @@ function mimeFromPath(path) {
 
 function escapeHtml(value = "") {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
+
+function jsonForScript(value) {
+  return JSON.stringify(value).replaceAll("<", "\\u003c");
 }
 
 async function copyText(value, message) {
@@ -744,6 +848,12 @@ window.addEventListener("message", (event) => {
   const nextProject = { ...project, previewRoute: event.data.route };
   setActiveProject(nextProject);
   renderPreview(nextProject);
+});
+
+window.addEventListener("storage", (event) => {
+  if (event.key !== storageKey) return;
+  projects = loadProjects();
+  render();
 });
 
 document.querySelector("#exportData").addEventListener("click", () => {

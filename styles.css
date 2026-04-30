@@ -548,14 +548,6 @@ h3 {
   grid-row: span 2;
 }
 
-.case-study.offset {
-  transform: translateX(-22px);
-}
-
-.case-study.offset:hover {
-  transform: translateX(-22px);
-}
-
 .deliverable-preview {
   min-height: 360px;
   border-bottom: 1px solid var(--line);
@@ -1714,15 +1706,6 @@ textarea:focus {
   .hero-actions {
     margin-left: 0;
     margin-right: 0;
-  }
-
-  .case-study.offset {
-    transform: none;
-  }
-
-  .case-study.offset:hover,
-  .case-study:hover {
-    transform: none;
   }
 
   .trust-strip {

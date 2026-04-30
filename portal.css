@@ -784,6 +784,15 @@ textarea:focus {
   padding: 0 16px;
 }
 
+.preview-actions,
+.composer-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .mock-preview-top span,
 .mock-preview-top a {
   overflow: hidden;
@@ -798,6 +807,18 @@ textarea:focus {
   color: var(--navy);
 }
 
+.mock-preview-top .text-button {
+  min-height: 30px;
+  padding: 0 11px;
+  font-size: 12px;
+}
+
+.mock-preview-top .text-button.active {
+  border-color: rgba(18, 51, 95, 0.5);
+  background: var(--navy);
+  color: var(--white);
+}
+
 .mock-site-preview .preview-empty {
   min-height: 576px;
 }
@@ -808,6 +829,107 @@ textarea:focus {
   height: 720px;
   border: 0;
   background: var(--white);
+}
+
+.annotation-composer,
+.preview-feedback,
+.admin-feedback-panel,
+.feedback-note-card {
+  border-top: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.annotation-composer {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.annotation-composer strong,
+.feedback-note-card strong {
+  display: block;
+  color: var(--navy-deep);
+  font-size: 14px;
+}
+
+.annotation-composer p,
+.feedback-note-card p,
+.empty-feedback {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.preview-feedback {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.preview-feedback textarea {
+  min-height: 96px;
+}
+
+.annotation-list {
+  display: grid;
+  gap: 8px;
+}
+
+.annotation-item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  border: 1px solid rgba(217, 224, 234, 0.9);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.78);
+  padding: 12px;
+}
+
+.annotation-item > span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  background: #2f80ed;
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.annotation-item strong {
+  display: block;
+  color: var(--navy-deep);
+  font-size: 13px;
+}
+
+.annotation-item p {
+  margin: 4px 0 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.annotation-item small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.admin-feedback-panel {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.feedback-note-card {
+  border: 1px solid rgba(217, 224, 234, 0.9);
+  border-radius: var(--radius);
+  padding: 14px;
 }
 
 .mock-dashboard-list {
