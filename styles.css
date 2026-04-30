@@ -1013,6 +1013,11 @@ textarea:focus {
   cursor: pointer;
 }
 
+.form-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 .pricing-hero {
   max-width: 900px;
   padding: 112px 0 48px;

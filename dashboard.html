@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JM Studios Project Dashboard</title>
+    <meta name="description" content="Client project dashboard for JM Studios website builds." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="portal.css?v=1" />
+  </head>
+  <body class="dashboard-body client-dashboard-body">
+    <header class="portal-topbar client-topbar">
+      <a class="portal-brand" href="index.html" aria-label="JM Studios home">
+        <img src="assets/jm-studios-logo.svg" alt="" aria-hidden="true" />
+        <span>JM Studios</span>
+      </a>
+    </header>
+
+    <main class="dashboard-shell">
+      <section class="access-panel" id="accessPanel">
+        <div>
+          <p class="eyebrow">Client access</p>
+          <h1>Enter your project password.</h1>
+          <p>The password unlocks your private JM Studios project dashboard.</p>
+        </div>
+        <form id="passwordForm" class="password-form">
+          <label>
+            Dashboard password
+            <input id="dashboardPassword" type="password" autocomplete="current-password" required />
+          </label>
+          <button class="solid-button" type="submit">View dashboard</button>
+          <p class="portal-status" id="dashboardStatus" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="client-dashboard hidden" id="clientDashboard" aria-live="polite">
+        <section class="client-hero" id="status">
+          <div class="client-browser-card" aria-label="Website project status preview">
+            <div class="client-browser-top">
+              <span></span>
+              <span></span>
+              <span></span>
+              <p id="projectName">clientsite.com</p>
+            </div>
+            <div class="client-browser-content">
+              <article class="mock-project-intro">
+                <p class="eyebrow" id="clientName"></p>
+                <h1 id="projectTitle"></h1>
+                <p id="projectOverview"></p>
+                <div class="client-hero-meta">
+                  <span id="projectStatus"></span>
+                  <span id="launchDate"></span>
+                </div>
+              </article>
+              <article class="mock-status-card">
+                <span>Launch status</span>
+                <strong id="heroStatus"></strong>
+                <div class="mock-progress"><i id="heroProgress"></i></div>
+              </article>
+              <article class="mock-mini-card">
+                <span>Domain</span>
+                <strong id="heroDomain"></strong>
+              </article>
+              <article class="mock-mini-card">
+                <span>DNS</span>
+                <strong id="heroDns"></strong>
+              </article>
+              <article class="mock-mini-card dark">
+                <span>SSL</span>
+                <strong id="heroSsl"></strong>
+              </article>
+              <article class="mock-mini-card dark">
+                <span>Hosting</span>
+                <strong id="heroHosting"></strong>
+              </article>
+              <article class="mock-site-preview" id="preview">
+                <div class="mock-preview-top">
+                  <span id="livePreviewAddress">Preview URL not set</span>
+                  <a class="hidden" id="openPreviewLink" href="#" target="_blank" rel="noreferrer">Open</a>
+                </div>
+                <div class="preview-empty" id="livePreviewEmpty">
+                  <strong>Preview is not ready yet.</strong>
+                  <p>JM Studios will add the website preview here when there is a build ready to test.</p>
+                </div>
+                <iframe id="livePreviewFrame" class="hidden" title="Website preview"></iframe>
+              </article>
+
+              <article class="mock-dashboard-list" id="checklist">
+                <div class="section-row">
+                  <div>
+                    <span>Progress</span>
+                    <strong>Build checklist</strong>
+                  </div>
+                  <b id="progressPercent"></b>
+                </div>
+                <div class="meter" aria-hidden="true"><span id="progressBar"></span></div>
+                <div class="client-task-list" id="clientTaskList"></div>
+              </article>
+
+              <article class="mock-dashboard-list">
+                <div>
+                  <span>Launch setup</span>
+                  <strong>Technical checks</strong>
+                </div>
+                <div class="client-setup-list" id="clientSetupList"></div>
+              </article>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="dashboard.js?v=1"></script>
+  </body>
+</html>

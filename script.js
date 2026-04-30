@@ -57,7 +57,7 @@ form.addEventListener("input", (event) => {
   }
 });
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const fields = [...form.querySelectorAll("input, select, textarea")];
@@ -78,12 +78,28 @@ form.addEventListener("submit", (event) => {
     return;
   }
 
-  const data = new FormData(form);
-  const subject = encodeURIComponent("Website project inquiry");
-  const body = encodeURIComponent(
-    `Name: ${data.get("name")}\nEmail: ${data.get("email")}\nService: ${data.get("service")}\n\nProject details:\n${data.get("message")}`
-  );
+  const submitButton = form.querySelector("button[type='submit']");
+  const data = Object.fromEntries(new FormData(form).entries());
 
-  status.textContent = "Opening your email app with the project details.";
-  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  submitButton.disabled = true;
+  status.textContent = "Sending your message.";
+
+  try {
+    const response = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error("Request failed");
+    }
+
+    form.reset();
+    status.textContent = "Message sent. We will respond in 1-2 days.";
+  } catch (error) {
+    status.textContent = "Message could not be sent. Please email us directly.";
+  } finally {
+    submitButton.disabled = false;
+  }
 });

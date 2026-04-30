@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="../" />
+    <title>JM Studios Admin</title>
+    <meta name="description" content="Create and update JM Studios client project dashboards." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="portal.css?v=1" />
+  </head>
+  <body class="admin-body is-locked">
+    <header class="portal-topbar">
+      <a class="portal-brand" href="index.html" aria-label="JM Studios home">
+        <img src="assets/jm-studios-logo.svg" alt="" aria-hidden="true" />
+        <span>JM Studios</span>
+      </a>
+      <div class="topbar-actions">
+        <button class="text-button" id="exportData" type="button">Export data</button>
+        <button class="solid-button" id="newProject" type="button">New dashboard</button>
+      </div>
+    </header>
+
+    <main class="admin-shell">
+      <aside class="project-sidebar" aria-label="Project dashboards">
+        <div class="sidebar-heading">
+          <p class="eyebrow">Admin</p>
+          <h1>Dashboards</h1>
+        </div>
+        <div class="project-list" id="projectList"></div>
+      </aside>
+
+      <section class="editor-panel" aria-label="Dashboard editor">
+        <form id="projectForm" class="portal-form">
+          <div class="editor-header">
+            <div>
+              <p class="eyebrow">Dashboard builder</p>
+              <h2 id="editorTitle">New client dashboard</h2>
+            </div>
+            <div class="editor-actions">
+              <button class="text-button danger" id="deleteProject" type="button">Delete</button>
+              <button class="solid-button" type="submit">Save dashboard</button>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Client name
+              <input name="clientName" type="text" autocomplete="off" required />
+            </label>
+            <label>
+              Client email
+              <input name="clientEmail" type="email" autocomplete="off" />
+            </label>
+            <label>
+              Project name
+              <input name="projectName" type="text" autocomplete="off" required />
+            </label>
+            <label>
+              Dashboard slug
+              <input name="slug" type="text" autocomplete="off" required />
+            </label>
+            <label>
+              Client password
+              <input name="password" type="text" autocomplete="off" required />
+            </label>
+            <label>
+              Target launch
+              <input name="dueDate" type="date" />
+            </label>
+            <label>
+              Project status
+              <select name="status">
+                <option>Quote sent</option>
+                <option>Waiting on content</option>
+                <option>Design in progress</option>
+                <option>Build in progress</option>
+                <option>Ready for review</option>
+                <option>Launch prep</option>
+                <option>Live</option>
+              </select>
+            </label>
+            <label>
+              Preview URL
+              <input name="previewUrl" type="url" autocomplete="off" placeholder="https://preview.example.com" />
+            </label>
+          </div>
+
+          <label class="wide-field">
+            Client-facing update
+            <textarea name="overview" rows="5" required></textarea>
+          </label>
+
+          <section class="setup-editor compact-section" aria-labelledby="setupEditorTitle">
+            <div class="section-row">
+              <div>
+                <p class="eyebrow">Launch setup</p>
+                <h3 id="setupEditorTitle">Domain, DNS, SSL, hosting</h3>
+              </div>
+              <button class="text-button" id="addSetupCheck" type="button">Add check</button>
+            </div>
+            <div class="setup-list" id="setupList"></div>
+          </section>
+
+          <section class="task-editor compact-section" aria-labelledby="taskEditorTitle">
+            <div class="section-row">
+              <div>
+                <p class="eyebrow">Progress</p>
+                <h3 id="taskEditorTitle">Checklist</h3>
+              </div>
+              <button class="text-button" id="addTask" type="button">Add item</button>
+            </div>
+            <div class="task-list" id="taskList"></div>
+          </section>
+
+          <section class="share-panel compact-section" aria-label="Dashboard publishing">
+            <div>
+              <p class="eyebrow">Client access</p>
+              <h3>Dashboard link and password</h3>
+              <p>
+                Send the client this link and the password separately. The dashboard will show
+                the project status, checklist, launch checks, and the preview URL you set above.
+                Saving updates this slug dashboard, so refreshing the dashboard shows your latest
+                admin changes in this browser.
+              </p>
+            </div>
+            <div class="share-actions">
+              <input id="dashboardLink" type="text" readonly aria-label="Dashboard link" />
+              <button class="solid-button" id="copyDashboardLink" type="button">Copy link</button>
+              <button class="text-button" id="copyPassword" type="button">Copy password</button>
+              <a class="text-button" id="openDashboard" href="../dashboard.html" target="_blank" rel="noreferrer">Open</a>
+            </div>
+          </section>
+
+          <section class="website-preview-editor compact-section" aria-labelledby="websitePreviewTitle">
+            <div class="section-row preview-heading-row">
+              <div>
+                <p class="eyebrow">Website preview</p>
+                <h3 id="websitePreviewTitle">Imported build tester</h3>
+              </div>
+              <label class="file-import-button">
+                Import folder
+                <input id="previewFolderInput" type="file" multiple webkitdirectory />
+              </label>
+              <label class="file-import-button secondary-import">
+                Import files
+                <input id="previewFileInput" type="file" multiple />
+              </label>
+            </div>
+
+            <div class="preview-toolbar" aria-label="Website preview controls">
+              <label>
+                Page
+                <select id="previewRoute"></select>
+              </label>
+              <div class="viewport-controls" role="group" aria-label="Preview viewport size">
+                <button class="text-button active" data-preview-size="desktop" type="button">Desktop</button>
+                <button class="text-button" data-preview-size="tablet" type="button">Tablet</button>
+                <button class="text-button" data-preview-size="mobile" type="button">Mobile</button>
+              </div>
+              <button class="text-button danger" id="clearPreview" type="button">Clear preview</button>
+            </div>
+
+            <div class="browser-preview-shell" id="browserPreviewShell">
+              <div class="browser-preview-top">
+                <span></span>
+                <span></span>
+                <span></span>
+                <p id="previewAddress">No website imported</p>
+              </div>
+              <div class="preview-empty" id="previewEmpty">
+                <strong>Import a static site folder to preview it here.</strong>
+                <p>Choose the folder that contains the website files, like index.html, CSS, JS, and images.</p>
+              </div>
+              <iframe id="websitePreviewFrame" title="Imported website preview" sandbox="allow-scripts allow-forms allow-popups"></iframe>
+            </div>
+          </section>
+          <p class="portal-status" id="portalStatus" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <script src="admin.js?v=1"></script>
+  </body>
+</html>
