@@ -1308,20 +1308,21 @@ textarea:focus {
 }
 
 .terms-row label {
-  display: grid;
-  grid-template-columns: 18px 1fr;
+  display: flex;
   gap: 10px;
-  align-items: start;
+  align-items: flex-start;
   color: var(--ink);
   font-size: 14px;
   font-weight: 700;
   line-height: 1.45;
 }
 
-.terms-row input {
+.terms-row input[type="checkbox"] {
+  flex: 0 0 18px;
   width: 18px;
   height: 18px;
   margin: 1px 0 0;
+  padding: 0;
   accent-color: var(--navy);
 }
 
