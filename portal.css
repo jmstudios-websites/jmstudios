@@ -435,11 +435,19 @@ textarea:focus {
   padding: 14px;
 }
 
-.payment-plan-links {
+.payment-plan-links,
+.payment-request-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   gap: 10px;
+}
+
+.payment-plan-links {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   align-items: end;
+}
+
+.payment-request-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .file-request-row {
@@ -965,6 +973,14 @@ textarea:focus {
   background: var(--white);
 }
 
+[data-scroll-guard] iframe {
+  pointer-events: none;
+}
+
+[data-scroll-guard].is-preview-active iframe {
+  pointer-events: auto;
+}
+
 .annotation-composer,
 .preview-feedback,
 .admin-feedback-panel,
@@ -1297,7 +1313,8 @@ textarea:focus {
   .task-row,
   .setup-row,
   .file-request-row,
-  .payment-plan-links {
+  .payment-plan-links,
+  .payment-request-actions {
     grid-template-columns: 1fr;
   }
 

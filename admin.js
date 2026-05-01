@@ -44,6 +44,7 @@ const fullPaymentLink = document.querySelector("#fullPaymentLink");
 const carePaymentLink = document.querySelector("#carePaymentLink");
 
 installAdminGate();
+installPreviewScrollGuards();
 
 let projects = loadProjects();
 let activeId = projects[0]?.id || null;
@@ -277,7 +278,6 @@ function createProject() {
     dueDate: "",
     status: "Quote sent",
     previewUrl: "",
-    paymentPlan: "starter",
     paymentUrl: "",
     paymentPlanName: "",
     paymentRequestedAt: "",
@@ -341,7 +341,6 @@ function fillForm(project) {
   form.dueDate.value = project.dueDate || "";
   form.status.value = project.status || "Quote sent";
   form.previewUrl.value = project.previewUrl || "";
-  form.paymentPlan.value = project.paymentPlan || "starter";
   form.overview.value = project.overview || "";
   editorTitle.textContent = project.projectName || "New client dashboard";
   renderSetupChecks(normalizeSetupChecks(project.setupChecks));
@@ -862,6 +861,55 @@ function jsonForScript(value) {
   return JSON.stringify(value).replaceAll("<", "\\u003c");
 }
 
+function installPreviewScrollGuards() {
+  const guardedPreviews = document.querySelectorAll("[data-scroll-guard]");
+  if (!guardedPreviews.length) return;
+
+  let wheelTimer;
+  let isWheelActive = false;
+
+  window.addEventListener(
+    "wheel",
+    () => {
+      isWheelActive = true;
+      window.clearTimeout(wheelTimer);
+      wheelTimer = window.setTimeout(() => {
+        isWheelActive = false;
+      }, 360);
+    },
+    { passive: true }
+  );
+
+  guardedPreviews.forEach((preview) => {
+    let hoverTimer;
+
+    const disablePreview = () => {
+      window.clearTimeout(hoverTimer);
+      preview.classList.remove("is-preview-active");
+    };
+
+    preview.addEventListener("mouseenter", () => {
+      window.clearTimeout(hoverTimer);
+      hoverTimer = window.setTimeout(() => {
+        if (!isWheelActive) preview.classList.add("is-preview-active");
+      }, 520);
+    });
+
+    preview.addEventListener("mousemove", () => {
+      if (preview.classList.contains("is-preview-active")) return;
+      window.clearTimeout(hoverTimer);
+      hoverTimer = window.setTimeout(() => {
+        if (!isWheelActive) preview.classList.add("is-preview-active");
+      }, 520);
+    });
+
+    preview.addEventListener("mouseleave", disablePreview);
+    preview.addEventListener("wheel", () => {
+      if (!preview.classList.contains("is-preview-active")) disablePreview();
+    });
+  });
+}
+
 async function copyText(value, message) {
   try {
     await navigator.clipboard.writeText(value);
@@ -879,9 +927,8 @@ function setPaymentStatus(message) {
   }, 4200);
 }
 
-async function askForPayment() {
+async function askForPayment(selectedPlan) {
   const project = projectFromForm();
-  const selectedPlan = project.paymentPlan || "starter";
   const paymentLinks = savePaymentLinks();
   const paymentUrl = paymentLinks[selectedPlan] || "";
   const planName = paymentPlans[selectedPlan] || "Website payment";
@@ -900,6 +947,7 @@ async function askForPayment() {
   const paymentRequestedAt = new Date().toISOString();
   const nextProject = {
     ...project,
+    paymentPlan: selectedPlan,
     paymentUrl,
     paymentPlanName: planName,
     paymentRequestedAt,
@@ -960,7 +1008,9 @@ form.slug.addEventListener("input", () => {
 
 document.querySelector("#newProject").addEventListener("click", createProject);
 document.querySelector("#addTask").addEventListener("click", () => addTaskRow());
-document.querySelector("#askForPayment").addEventListener("click", askForPayment);
+document.querySelectorAll("[data-payment-plan]").forEach((button) => {
+  button.addEventListener("click", () => askForPayment(button.dataset.paymentPlan));
+});
 document.querySelector("#savePaymentLinks").addEventListener("click", savePaymentLinks);
 document.querySelector("#addFileRequest").addEventListener("click", () => {
   addFileRequestRow({

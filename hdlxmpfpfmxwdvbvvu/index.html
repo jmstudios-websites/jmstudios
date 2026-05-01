@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="portal.css?v=4" />
+    <link rel="stylesheet" href="portal.css?v=5" />
   </head>
   <body class="admin-body is-locked">
     <header class="portal-topbar">
@@ -89,14 +89,6 @@
               Preview URL
               <input name="previewUrl" type="url" autocomplete="off" placeholder="https://preview.example.com" />
             </label>
-            <label>
-              Payment plan to request
-              <select name="paymentPlan">
-                <option value="starter">Starter website</option>
-                <option value="full">Full website build</option>
-                <option value="care">Care package</option>
-              </select>
-            </label>
           </div>
 
           <label class="wide-field">
@@ -151,10 +143,14 @@
                 <p class="eyebrow">Payment</p>
                 <h3>Continue development request</h3>
                 <p class="helper-copy">
-                  After the first preview is ready, send the client a payment email and show the payment notice on their dashboard.
+                  After the first preview is ready, choose the package to request. The client dashboard will show that payment button at the top, and Resend will email the Stripe link.
                 </p>
               </div>
-              <button class="solid-button" id="askForPayment" type="button">Ask for payment</button>
+            </div>
+            <div class="payment-request-actions" aria-label="Request package payment">
+              <button class="solid-button" data-payment-plan="starter" type="button">Ask for Starter website</button>
+              <button class="solid-button" data-payment-plan="full" type="button">Ask for Full build</button>
+              <button class="solid-button" data-payment-plan="care" type="button">Ask for Care package</button>
             </div>
             <div class="payment-plan-links" aria-label="Stripe payment links">
               <label>
@@ -218,7 +214,7 @@
               <button class="text-button danger" id="clearPreview" type="button">Clear preview</button>
             </div>
 
-            <div class="browser-preview-shell" id="browserPreviewShell">
+            <div class="browser-preview-shell" id="browserPreviewShell" data-scroll-guard>
               <div class="browser-preview-top">
                 <span></span>
                 <span></span>
@@ -252,6 +248,6 @@
     </main>
 
     <script src="contact-config.js"></script>
-    <script src="admin.js?v=4"></script>
+    <script src="admin.js?v=6"></script>
   </body>
 </html>

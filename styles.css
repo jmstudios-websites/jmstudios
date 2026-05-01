@@ -1002,6 +1002,14 @@ h3 {
   background: var(--white);
 }
 
+[data-scroll-guard] iframe {
+  pointer-events: none;
+}
+
+[data-scroll-guard].is-preview-active iframe {
+  pointer-events: auto;
+}
+
 .portfolio-site {
   display: grid;
   gap: 18px;

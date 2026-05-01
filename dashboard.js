@@ -25,6 +25,8 @@ if (!slug && !payload) {
   statusEl.textContent = "This dashboard link is missing project data. Ask JM Studios for a fresh link.";
 }
 
+installPreviewScrollGuards();
+
 passwordForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   statusEl.textContent = "Unlocking dashboard.";
@@ -704,6 +706,55 @@ function readDashboardFile(file) {
 function readableFileSize(bytes = 0) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function installPreviewScrollGuards() {
+  const guardedPreviews = document.querySelectorAll("[data-scroll-guard]");
+  if (!guardedPreviews.length) return;
+
+  let wheelTimer;
+  let isWheelActive = false;
+
+  window.addEventListener(
+    "wheel",
+    () => {
+      isWheelActive = true;
+      window.clearTimeout(wheelTimer);
+      wheelTimer = window.setTimeout(() => {
+        isWheelActive = false;
+      }, 360);
+    },
+    { passive: true }
+  );
+
+  guardedPreviews.forEach((preview) => {
+    let hoverTimer;
+
+    const disablePreview = () => {
+      window.clearTimeout(hoverTimer);
+      preview.classList.remove("is-preview-active");
+    };
+
+    preview.addEventListener("mouseenter", () => {
+      window.clearTimeout(hoverTimer);
+      hoverTimer = window.setTimeout(() => {
+        if (!isWheelActive) preview.classList.add("is-preview-active");
+      }, 520);
+    });
+
+    preview.addEventListener("mousemove", () => {
+      if (preview.classList.contains("is-preview-active")) return;
+      window.clearTimeout(hoverTimer);
+      hoverTimer = window.setTimeout(() => {
+        if (!isWheelActive) preview.classList.add("is-preview-active");
+      }, 520);
+    });
+
+    preview.addEventListener("mouseleave", disablePreview);
+    preview.addEventListener("wheel", () => {
+      if (!preview.classList.contains("is-preview-active")) disablePreview();
+    });
+  });
 }
 
 toggleAnnotationButton.addEventListener("click", () => {

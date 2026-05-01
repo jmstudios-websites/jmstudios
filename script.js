@@ -25,6 +25,8 @@ if ("IntersectionObserver" in window) {
   revealItems.forEach((item) => item.classList.add("is-visible"));
 }
 
+installPreviewScrollGuards();
+
 const messages = {
   name: "Please add your name.",
   email: "Please add a valid email address.",
@@ -111,3 +113,52 @@ form.addEventListener("submit", async (event) => {
     submitButton.disabled = false;
   }
 });
+
+function installPreviewScrollGuards() {
+  const guardedPreviews = document.querySelectorAll("[data-scroll-guard]");
+  if (!guardedPreviews.length) return;
+
+  let wheelTimer;
+  let isWheelActive = false;
+
+  window.addEventListener(
+    "wheel",
+    () => {
+      isWheelActive = true;
+      window.clearTimeout(wheelTimer);
+      wheelTimer = window.setTimeout(() => {
+        isWheelActive = false;
+      }, 360);
+    },
+    { passive: true }
+  );
+
+  guardedPreviews.forEach((preview) => {
+    let hoverTimer;
+
+    const disablePreview = () => {
+      window.clearTimeout(hoverTimer);
+      preview.classList.remove("is-preview-active");
+    };
+
+    preview.addEventListener("mouseenter", () => {
+      window.clearTimeout(hoverTimer);
+      hoverTimer = window.setTimeout(() => {
+        if (!isWheelActive) preview.classList.add("is-preview-active");
+      }, 520);
+    });
+
+    preview.addEventListener("mousemove", () => {
+      if (preview.classList.contains("is-preview-active")) return;
+      window.clearTimeout(hoverTimer);
+      hoverTimer = window.setTimeout(() => {
+        if (!isWheelActive) preview.classList.add("is-preview-active");
+      }, 520);
+    });
+
+    preview.addEventListener("mouseleave", disablePreview);
+    preview.addEventListener("wheel", () => {
+      if (!preview.classList.contains("is-preview-active")) disablePreview();
+    });
+  });
+}
