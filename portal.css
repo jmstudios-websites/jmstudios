@@ -916,7 +916,7 @@ textarea:focus {
 }
 
 .request-sticky-reminder {
-  bottom: 78px;
+  bottom: 104px;
   background: var(--white);
 }
 
