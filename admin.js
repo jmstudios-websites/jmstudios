@@ -43,6 +43,10 @@ const starterPaymentLink = document.querySelector("#starterPaymentLink");
 const fullPaymentLink = document.querySelector("#fullPaymentLink");
 const carePaymentLink = document.querySelector("#carePaymentLink");
 const paymentStatusSummary = document.querySelector("#paymentStatusSummary");
+const clientRequestTitle = document.querySelector("#clientRequestTitle");
+const clientRequestMessage = document.querySelector("#clientRequestMessage");
+const clientRequestSummary = document.querySelector("#clientRequestSummary");
+const clientRequestStatus = document.querySelector("#clientRequestStatus");
 
 installAdminGate();
 installPreviewScrollGuards();
@@ -69,6 +73,24 @@ const defaultPaymentLinks = {
   starter: "https://buy.stripe.com/test_8x2bJ33K422jgl6emF83C00",
   full: "https://buy.stripe.com/test_5kQ8wR1BW5evc4Q0vP83C01",
   care: "https://buy.stripe.com/test_3cI5kFdkE5ev2ugbat83C02",
+};
+
+const clientRequestPresets = {
+  stripe: {
+    title: "Create Stripe account",
+    message:
+      "Please create your Stripe account, finish business and bank verification, then invite JM Studios as a Developer. This lets payments go directly to your business while we connect Stripe to the website.",
+  },
+  supabase: {
+    title: "Create Supabase account",
+    message:
+      "Please create a Supabase account and project, then invite JM Studios as a developer/collaborator so we can set up the backend, database, and any protected keys inside your account.",
+  },
+  resend: {
+    title: "Create Resend account",
+    message:
+      "Please create a Resend account and verify your sending domain. After it is verified, invite JM Studios or send the approved sending email so the website can send messages from your business address.",
+  },
 };
 
 const starterFileRequests = [
@@ -222,6 +244,44 @@ function setStatus(message) {
   }, 3200);
 }
 
+function setClientRequestStatus(message) {
+  clientRequestStatus.textContent = message;
+  window.clearTimeout(setClientRequestStatus.timer);
+  setClientRequestStatus.timer = window.setTimeout(() => {
+    clientRequestStatus.textContent = "";
+  }, 5200);
+}
+
+function applyClientRequestPreset(type) {
+  const preset = clientRequestPresets[type];
+  if (!preset) return;
+  clientRequestTitle.value = preset.title;
+  clientRequestMessage.value = preset.message;
+  clientRequestMessage.focus();
+}
+
+function renderClientRequest(project) {
+  const request = project.clientRequest;
+  clientRequestTitle.value = request?.title || "";
+  clientRequestMessage.value = request?.message || "";
+
+  if (!request?.requestedAt) {
+    clientRequestSummary.classList.remove("active");
+    clientRequestSummary.innerHTML = `
+      <strong>Active request</strong>
+      <p>No setup request is active for this dashboard.</p>
+    `;
+    return;
+  }
+
+  clientRequestSummary.classList.add("active");
+  clientRequestSummary.innerHTML = `
+    <strong>${escapeHtml(request.title || "Setup request")}</strong>
+    <p>${escapeHtml(request.message || "")}</p>
+    <small>Sent ${escapeHtml(formatDateTime(request.requestedAt))}</small>
+  `;
+}
+
 function installAdminGate() {
   if (sessionStorage.getItem("jmAdminUnlocked") === ADMIN_PASSWORD_HASH) {
     document.body.classList.remove("is-locked");
@@ -291,6 +351,7 @@ function createProject() {
     previewNotes: "",
     annotations: [],
     fileRequests: starterFileRequests,
+    clientRequest: null,
     updatedAt: new Date().toISOString(),
   };
 
@@ -327,6 +388,7 @@ function projectFromForm() {
         note: saved?.note || "",
       };
     }).filter((request) => request.title),
+    clientRequest: getActiveProject().clientRequest || null,
     previewRoute: previewRoute.value,
     previewSize: browserPreviewShell.dataset.size || "desktop",
     updatedAt: new Date().toISOString(),
@@ -347,6 +409,7 @@ function fillForm(project) {
   renderSetupChecks(normalizeSetupChecks(project.setupChecks));
   renderTasks(project.tasks || []);
   renderFileRequests(project.fileRequests || []);
+  renderClientRequest(project);
   renderPreview(project);
   renderClientFeedback(project);
 }
@@ -1066,6 +1129,78 @@ async function askForPayment(selectedPlan) {
   }
 }
 
+async function sendClientRequest() {
+  const project = projectFromForm();
+  const title = clientRequestTitle.value.trim();
+  const message = clientRequestMessage.value.trim();
+
+  if (!project.clientEmail) {
+    setClientRequestStatus("Add the client email before sending a setup request.");
+    return;
+  }
+
+  if (!title || !message) {
+    setClientRequestStatus("Add a title and message for the setup request.");
+    return;
+  }
+
+  const requestedAt = new Date().toISOString();
+  const nextProject = {
+    ...project,
+    clientRequest: {
+      title,
+      message,
+      requestedAt,
+      status: "Open",
+    },
+    updatedAt: requestedAt,
+  };
+
+  if (!setActiveProject(nextProject)) return;
+  renderDashboardAccess(nextProject);
+  renderList();
+  fillForm(nextProject);
+  setClientRequestStatus("Sending setup request email.");
+
+  try {
+    const response = await fetch(window.JM_CONTACT_ENDPOINT || "/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "client-request",
+        clientName: nextProject.clientName,
+        clientEmail: nextProject.clientEmail,
+        projectName: nextProject.projectName,
+        requestTitle: title,
+        requestMessage: message,
+        dashboardUrl: dashboardLink.value,
+      }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(result.details || result.error || "Setup request email could not be sent.");
+    }
+    setClientRequestStatus("Setup request sent and dashboard notice is live.");
+  } catch (error) {
+    const deployHint = error.message === "Missing required fields."
+      ? "Deploy the updated Supabase contact function; the live one does not know setup requests yet."
+      : error.message;
+    setClientRequestStatus(`Dashboard notice is live, but email failed: ${deployHint}`);
+  }
+}
+
+function clearClientRequest() {
+  const project = {
+    ...projectFromForm(),
+    clientRequest: null,
+    updatedAt: new Date().toISOString(),
+  };
+  if (!setActiveProject(project)) return;
+  fillForm(project);
+  renderList();
+  setClientRequestStatus("Setup request cleared from this dashboard.");
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const nextProject = projectFromForm();
@@ -1090,6 +1225,11 @@ document.querySelector("#addTask").addEventListener("click", () => addTaskRow())
 document.querySelectorAll("[data-payment-plan]").forEach((button) => {
   button.addEventListener("click", () => askForPayment(button.dataset.paymentPlan));
 });
+document.querySelectorAll("[data-client-request-preset]").forEach((button) => {
+  button.addEventListener("click", () => applyClientRequestPreset(button.dataset.clientRequestPreset));
+});
+document.querySelector("#sendClientRequest").addEventListener("click", sendClientRequest);
+document.querySelector("#clearClientRequest").addEventListener("click", clearClientRequest);
 document.querySelector("#savePaymentLinks").addEventListener("click", savePaymentLinks);
 document.querySelector("#addFileRequest").addEventListener("click", () => {
   addFileRequestRow({

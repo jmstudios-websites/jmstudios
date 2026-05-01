@@ -369,6 +369,7 @@ textarea:focus {
 .task-editor,
 .setup-editor,
 .file-request-editor,
+.client-request-panel,
 .payment-request-panel,
 .website-preview-editor,
 .share-panel {
@@ -436,7 +437,10 @@ textarea:focus {
 }
 
 .payment-plan-links,
-.payment-request-actions {
+.payment-request-actions,
+.client-request-actions,
+.request-preset-actions,
+.client-request-fields {
   display: grid;
   gap: 10px;
 }
@@ -450,28 +454,58 @@ textarea:focus {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.payment-status-card {
+.request-preset-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.client-request-fields {
+  grid-template-columns: minmax(220px, 0.7fr) minmax(280px, 1.3fr);
+}
+
+.client-request-fields .wide-field {
+  margin: 0;
+}
+
+.client-request-actions {
+  grid-template-columns: minmax(0, 220px) minmax(0, 180px);
+}
+
+.payment-status-card,
+.client-request-summary {
   border: 1px solid rgba(217, 224, 234, 0.9);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.78);
   padding: 14px;
 }
 
-.payment-status-card.paid {
+.payment-status-card.paid,
+.client-request-summary.active {
   border-color: rgba(47, 111, 94, 0.35);
   background: rgba(47, 111, 94, 0.08);
 }
 
-.payment-status-card strong {
+.payment-status-card strong,
+.client-request-summary strong {
   color: var(--navy-deep);
   font-size: 14px;
 }
 
-.payment-status-card p {
+.payment-status-card p,
+.client-request-summary p {
   margin: 5px 0 0;
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
+}
+
+.client-request-summary small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .file-request-row {
@@ -812,7 +846,8 @@ textarea:focus {
   padding: 8px 2px 16px;
 }
 
-.payment-banner {
+.payment-banner,
+.client-request-banner {
   display: flex;
   grid-column: 1 / -1;
   align-items: center;
@@ -824,7 +859,12 @@ textarea:focus {
   padding: 18px 20px;
 }
 
-.payment-banner span {
+.client-request-banner {
+  background: linear-gradient(135deg, rgba(239, 245, 250, 0.98), rgba(255, 255, 255, 0.94));
+}
+
+.payment-banner span,
+.client-request-banner span {
   display: block;
   margin-bottom: 8px;
   color: var(--navy);
@@ -834,14 +874,16 @@ textarea:focus {
   text-transform: uppercase;
 }
 
-.payment-banner strong {
+.payment-banner strong,
+.client-request-banner strong {
   display: block;
   color: var(--navy-deep);
   font-size: clamp(20px, 2.2vw, 28px);
   line-height: 1.1;
 }
 
-.payment-banner p {
+.payment-banner p,
+.client-request-banner p {
   max-width: 620px;
   margin: 8px 0 0;
   color: var(--muted);
@@ -849,7 +891,8 @@ textarea:focus {
   line-height: 1.55;
 }
 
-.payment-sticky-reminder {
+.payment-sticky-reminder,
+.request-sticky-reminder {
   position: fixed;
   right: clamp(14px, 4vw, 34px);
   bottom: 20px;
@@ -872,24 +915,42 @@ textarea:focus {
     transform 180ms ease;
 }
 
-.payment-sticky-reminder.is-visible {
+.request-sticky-reminder {
+  bottom: 78px;
+  background: var(--white);
+}
+
+.payment-sticky-reminder.is-visible,
+.request-sticky-reminder.is-visible {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);
 }
 
-.payment-sticky-reminder span {
+.payment-sticky-reminder span,
+.request-sticky-reminder span {
   color: var(--white);
   font-size: 13px;
   font-weight: 900;
   line-height: 1.25;
 }
 
-.payment-sticky-reminder .text-button {
+.request-sticky-reminder span {
+  color: var(--navy-deep);
+}
+
+.payment-sticky-reminder .text-button,
+.request-sticky-reminder .text-button {
   border-color: rgba(255, 255, 255, 0.26);
   background: var(--white);
   color: var(--navy);
   white-space: nowrap;
+}
+
+.request-sticky-reminder .text-button {
+  border-color: rgba(18, 51, 95, 0.18);
+  background: var(--navy);
+  color: var(--white);
 }
 
 .mock-project-intro h1 {
@@ -1381,7 +1442,10 @@ textarea:focus {
   .setup-row,
   .file-request-row,
   .payment-plan-links,
-  .payment-request-actions {
+  .payment-request-actions,
+  .client-request-actions,
+  .request-preset-actions,
+  .client-request-fields {
     grid-template-columns: 1fr;
   }
 

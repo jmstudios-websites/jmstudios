@@ -32,6 +32,10 @@ Deno.serve(async (request) => {
     return sendPaymentRequest(body, apiKey, fromEmail, toEmail);
   }
 
+  if (body.type === "client-request") {
+    return sendClientRequest(body, apiKey, fromEmail, toEmail);
+  }
+
   const { name, email, service, message } = body;
 
   if (!name || !email || !service || !message) {
@@ -136,6 +140,64 @@ async function sendPaymentRequest(body, apiKey, fromEmail, ownerEmail) {
     console.error("Resend payment request error", response.status, details);
     return jsonResponse(502, {
       error: "Payment request email could not be sent.",
+      details,
+    });
+  }
+
+  return jsonResponse(200, { ok: true });
+}
+
+async function sendClientRequest(body, apiKey, fromEmail, ownerEmail) {
+  const clientName = String(body.clientName || "").trim();
+  const clientEmail = String(body.clientEmail || "").trim();
+  const projectName = String(body.projectName || "Website project").trim();
+  const requestTitle = String(body.requestTitle || "").trim();
+  const requestMessage = String(body.requestMessage || "").trim();
+  const dashboardUrl = String(body.dashboardUrl || "").trim();
+
+  if (!clientName || !clientEmail || !requestTitle || !requestMessage) {
+    return jsonResponse(400, { error: "Missing required client request fields." });
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(clientEmail)) {
+    return jsonResponse(400, { error: "Invalid client email address." });
+  }
+
+  const text = [
+    `Hi ${clientName},`,
+    "",
+    `JM Studios needs one setup item for ${projectName}:`,
+    "",
+    requestTitle,
+    requestMessage,
+    "",
+    dashboardUrl ? `You can also see this request in your project dashboard: ${dashboardUrl}` : "",
+    "",
+    "Thank you,",
+    "JM Studios",
+  ].filter(Boolean).join("\n");
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: [clientEmail],
+      reply_to: ownerEmail,
+      subject: `${requestTitle} for ${projectName}`,
+      text,
+    }),
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    console.error("Resend client request error", response.status, details);
+    return jsonResponse(502, {
+      error: "Client request email could not be sent.",
       details,
     });
   }

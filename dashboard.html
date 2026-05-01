@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="portal.css?v=7" />
+    <link rel="stylesheet" href="portal.css?v=8" />
   </head>
   <body class="dashboard-body client-dashboard-body">
     <header class="portal-topbar client-topbar">
@@ -59,6 +59,17 @@
               <aside class="payment-sticky-reminder hidden" id="paymentStickyReminder" aria-live="polite">
                 <span>Payment is required to continue development.</span>
                 <button class="text-button" id="scrollToPayment" type="button">Back to payment</button>
+              </aside>
+              <article class="client-request-banner hidden" id="clientRequestBanner">
+                <div>
+                  <span>Action needed</span>
+                  <strong id="clientRequestTitle">Setup request from JM Studios.</strong>
+                  <p id="clientRequestMessage">JM Studios needs one setup item before continuing.</p>
+                </div>
+              </article>
+              <aside class="request-sticky-reminder hidden" id="clientRequestStickyReminder" aria-live="polite">
+                <span id="clientRequestReminderText">JM Studios needs one setup item.</span>
+                <button class="text-button" id="scrollToClientRequest" type="button">Back to request</button>
               </aside>
 
               <article class="mock-project-intro">
@@ -167,6 +178,6 @@
       </section>
     </main>
 
-    <script src="dashboard.js?v=9"></script>
+    <script src="dashboard.js?v=10"></script>
   </body>
 </html>

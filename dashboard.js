@@ -14,6 +14,8 @@ const previewNotesInput = document.querySelector("#previewNotesInput");
 const feedbackStatus = document.querySelector("#feedbackStatus");
 const clientAnnotationList = document.querySelector("#clientAnnotationList");
 const clientFileRequestList = document.querySelector("#clientFileRequestList");
+const clientRequestBanner = document.querySelector("#clientRequestBanner");
+const clientRequestStickyReminder = document.querySelector("#clientRequestStickyReminder");
 let previewObjectUrls = [];
 let activeProject = null;
 let annotationMode = false;
@@ -130,6 +132,7 @@ function renderProject(project) {
     ? `Last updated: ${formatDateTime(project.updatedAt)}`
     : "Last updated: Not yet";
   renderPaymentBanner(project);
+  renderClientRequest(project);
   document.querySelector("#launchDate").textContent = project.dueDate
     ? `Target launch: ${formatDate(project.dueDate)}`
     : "Launch date will be confirmed.";
@@ -194,6 +197,26 @@ function renderPaymentBanner(project) {
   }
 
   installPaymentReminderObserver(shouldShow);
+}
+
+function renderClientRequest(project) {
+  const request = project.clientRequest;
+  const shouldShow = Boolean(request?.requestedAt && request.status !== "Done");
+  clientRequestBanner.classList.toggle("hidden", !shouldShow);
+  clientRequestStickyReminder.classList.toggle("hidden", !shouldShow);
+
+  if (!shouldShow) {
+    installClientRequestReminderObserver(false);
+    return;
+  }
+
+  document.querySelector("#clientRequestTitle").textContent = request.title || "Setup request from JM Studios.";
+  document.querySelector("#clientRequestMessage").textContent =
+    request.message || "JM Studios needs one setup item before continuing.";
+  document.querySelector("#clientRequestReminderText").textContent = request.title
+    ? `Action needed: ${request.title}`
+    : "JM Studios needs one setup item.";
+  installClientRequestReminderObserver(true);
 }
 
 function renderPreview(project) {
@@ -750,6 +773,47 @@ function installPaymentReminderObserver(shouldShow) {
   installPaymentReminderObserver.updateVisibility();
 }
 
+function installClientRequestReminderObserver(shouldShow) {
+  const banner = document.querySelector("#clientRequestBanner");
+  const reminder = document.querySelector("#clientRequestStickyReminder");
+  if (!banner || !reminder) return;
+
+  if (!shouldShow) {
+    reminder.classList.add("hidden");
+    reminder.classList.remove("is-visible");
+    window.removeEventListener("scroll", installClientRequestReminderObserver.updateVisibility);
+    window.removeEventListener("resize", installClientRequestReminderObserver.updateVisibility);
+    if (installClientRequestReminderObserver.observer) {
+      installClientRequestReminderObserver.observer.disconnect();
+    }
+    return;
+  }
+
+  if (installClientRequestReminderObserver.observer) {
+    installClientRequestReminderObserver.observer.disconnect();
+  }
+
+  reminder.classList.remove("hidden");
+
+  installClientRequestReminderObserver.updateVisibility = () => {
+    const rect = banner.getBoundingClientRect();
+    const shouldRemind = rect.bottom < 0;
+    reminder.classList.toggle("is-visible", shouldRemind);
+  };
+
+  installClientRequestReminderObserver.observer = new IntersectionObserver(
+    ([entry]) => {
+      const isPastBanner = entry.boundingClientRect.bottom < 0;
+      reminder.classList.toggle("is-visible", !entry.isIntersecting && isPastBanner);
+    },
+    { threshold: 0.02 }
+  );
+  installClientRequestReminderObserver.observer.observe(banner);
+  window.addEventListener("scroll", installClientRequestReminderObserver.updateVisibility, { passive: true });
+  window.addEventListener("resize", installClientRequestReminderObserver.updateVisibility);
+  installClientRequestReminderObserver.updateVisibility();
+}
+
 function installPreviewScrollGuards() {
   const guardedPreviews = document.querySelectorAll("[data-scroll-guard]");
   if (!guardedPreviews.length) return;
@@ -814,6 +878,15 @@ document.querySelector("#scrollToPayment").addEventListener("click", () => {
 document.querySelector("#paymentStickyReminder").addEventListener("click", (event) => {
   if (event.target.closest("button")) return;
   document.querySelector("#paymentBanner").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+document.querySelector("#scrollToClientRequest").addEventListener("click", () => {
+  document.querySelector("#clientRequestBanner").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+document.querySelector("#clientRequestStickyReminder").addEventListener("click", (event) => {
+  if (event.target.closest("button")) return;
+  document.querySelector("#clientRequestBanner").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
 toggleAnnotationButton.addEventListener("click", () => {

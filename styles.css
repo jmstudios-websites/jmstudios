@@ -1684,6 +1684,7 @@ textarea:focus {
 }
 
 .legal-content h2 {
+  grid-column: 1;
   margin: 0;
   color: var(--navy-deep);
   font-size: clamp(20px, 1.8vw, 26px);
@@ -1691,10 +1692,15 @@ textarea:focus {
 }
 
 .legal-content p {
+  grid-column: 2;
   margin: 0;
   color: var(--muted);
   font-size: 16px;
   line-height: 1.78;
+}
+
+.legal-content p + p {
+  margin-top: 16px;
 }
 
 @keyframes settle {
@@ -1987,6 +1993,11 @@ textarea:focus {
   .legal-content article {
     gap: 12px;
     padding: 24px 0;
+  }
+
+  .legal-content h2,
+  .legal-content p {
+    grid-column: 1;
   }
 
   .pricing-copy {

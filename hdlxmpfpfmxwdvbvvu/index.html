@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="portal.css?v=6" />
+    <link rel="stylesheet" href="portal.css?v=8" />
   </head>
   <body class="admin-body is-locked">
     <header class="portal-topbar">
@@ -137,6 +137,42 @@
             </div>
           </section>
 
+          <section class="client-request-panel compact-section" aria-label="Client setup request">
+            <div class="section-row">
+              <div>
+                <p class="eyebrow">Client request</p>
+                <h3>Ask for setup access</h3>
+                <p class="helper-copy">
+                  Pick a preset or write a custom request. It shows at the top of this client dashboard and emails them through Resend.
+                </p>
+              </div>
+            </div>
+            <div class="request-preset-actions" aria-label="Setup request presets">
+              <button class="text-button" data-client-request-preset="stripe" type="button">Stripe preset</button>
+              <button class="text-button" data-client-request-preset="supabase" type="button">Supabase preset</button>
+              <button class="text-button" data-client-request-preset="resend" type="button">Resend preset</button>
+            </div>
+            <div class="client-request-fields">
+              <label>
+                Request title
+                <input id="clientRequestTitle" type="text" autocomplete="off" placeholder="Create Stripe account" />
+              </label>
+              <label class="wide-field">
+                Request message
+                <textarea id="clientRequestMessage" rows="4" placeholder="Tell the client exactly what to do."></textarea>
+              </label>
+            </div>
+            <div class="client-request-actions">
+              <button class="solid-button" id="sendClientRequest" type="button">Send request</button>
+              <button class="text-button danger" id="clearClientRequest" type="button">Clear request</button>
+            </div>
+            <article class="client-request-summary" id="clientRequestSummary">
+              <strong>Active request</strong>
+              <p>No setup request is active for this dashboard.</p>
+            </article>
+            <p class="portal-status" id="clientRequestStatus" role="status" aria-live="polite"></p>
+          </section>
+
           <section class="payment-request-panel compact-section" aria-label="Payment request">
             <div class="section-row">
               <div>
@@ -252,6 +288,6 @@
     </main>
 
     <script src="contact-config.js"></script>
-    <script src="admin.js?v=7"></script>
+    <script src="admin.js?v=8"></script>
   </body>
 </html>
