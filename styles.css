@@ -1591,6 +1591,20 @@ textarea:focus {
   line-height: 1.7;
 }
 
+.footer-email {
+  width: fit-content;
+  color: var(--navy);
+  font-size: 15px;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color 180ms ease;
+}
+
+.footer-email:hover {
+  color: var(--navy-deep);
+}
+
 .footer-nav,
 .footer-actions {
   display: grid;
