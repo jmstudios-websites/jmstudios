@@ -876,7 +876,31 @@
       *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
       .r { opacity: 1; transform: none; }
     }
+
+    html.portfolio-preview a,
+    html.portfolio-preview button,
+    html.portfolio-preview input,
+    html.portfolio-preview select,
+    html.portfolio-preview textarea,
+    html.portfolio-preview [onclick],
+    html.portfolio-preview [role="button"] {
+      pointer-events: none !important;
+      cursor: default !important;
+    }
   </style>
+  <script>
+    if (window.self !== window.top) {
+      document.documentElement.classList.add('portfolio-preview');
+      ['click', 'submit'].forEach((eventName) => {
+        window.addEventListener(eventName, (event) => {
+          if (event.target.closest('a, button, input, select, textarea, [onclick], [role="button"]')) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+      });
+    }
+  </script>
 </head>
 
 <body>

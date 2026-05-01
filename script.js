@@ -192,7 +192,11 @@ function installPortfolioTabs() {
         const isActive = panel === targetPanel;
         panel.hidden = !isActive;
         panel.classList.toggle("active", isActive);
-        panel.classList.remove("is-preview-active");
+        panel.querySelector("[data-scroll-guard]")?.classList.remove("is-preview-active");
+      });
+
+      window.requestAnimationFrame(() => {
+        targetPanel.querySelector("[data-scroll-guard]")?.classList.add("is-preview-active");
       });
     });
   });
