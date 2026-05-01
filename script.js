@@ -33,6 +33,7 @@ const messages = {
   email: "Please add a valid email address.",
   service: "Please choose the closest service.",
   message: "Please add a few project details.",
+  termsAccepted: "Please agree to the Terms & Conditions before sending.",
 };
 
 function setInvalid(field) {
@@ -49,6 +50,7 @@ function clearInvalid(field) {
     email: "Used only for this project conversation.",
     service: "Pick the closest option.",
     message: "Mention your business, pages needed, and ideal launch date.",
+    termsAccepted: "You need to agree before sending a project request.",
   };
   row.querySelector("small").textContent = helperText[field.name];
 }
@@ -134,6 +136,16 @@ function installPreviewScrollGuards() {
     }, delay);
   };
 
+  const activatePreview = (preview) => {
+    hoveredPreviews.add(preview);
+    window.clearTimeout(preview.scrollGuardTimer);
+    if (!isWheelActive) {
+      preview.classList.add("is-preview-active");
+    } else {
+      schedulePreviewUnlock(preview, 0);
+    }
+  };
+
   window.addEventListener(
     "wheel",
     () => {
@@ -161,8 +173,11 @@ function installPreviewScrollGuards() {
 
     preview.addEventListener("mousemove", () => {
       if (preview.classList.contains("is-preview-active")) return;
-      hoveredPreviews.add(preview);
-      schedulePreviewUnlock(preview);
+      activatePreview(preview);
+    });
+
+    preview.addEventListener("pointerdown", () => {
+      activatePreview(preview);
     });
 
     preview.addEventListener("mouseleave", disablePreview);

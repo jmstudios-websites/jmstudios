@@ -518,6 +518,37 @@
       pointer-events: none !important;
       cursor: default !important;
     }
+
+    html.portfolio-preview nav {
+      position: sticky;
+      padding: 1rem 5vw;
+    }
+
+    html.portfolio-preview .hero {
+      height: auto;
+      min-height: min(720px, 82svh);
+      align-items: center;
+      padding-top: 0;
+    }
+
+    html.portfolio-preview .hero-content {
+      max-width: 760px;
+      padding: clamp(70px, 8vh, 110px) 5vw clamp(54px, 8vh, 86px);
+    }
+
+    html.portfolio-preview .hero-title {
+      max-width: 14ch;
+      font-size: clamp(4.4rem, 6.2vw, 6.6rem);
+      line-height: 0.96;
+    }
+
+    html.portfolio-preview .hero-desc {
+      max-width: 42ch;
+    }
+
+    html.portfolio-preview .scroll-cue {
+      display: none;
+    }
   </style>
   <script>
     if (window.self !== window.top) {

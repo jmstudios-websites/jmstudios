@@ -1224,10 +1224,23 @@ h3 {
   font-weight: 800;
 }
 
-.contact-details span {
+.contact-details span,
+.contact-details a {
   width: fit-content;
   border-bottom: 1px solid rgba(18, 51, 95, 0.2);
   padding-bottom: 8px;
+  color: var(--navy-deep);
+  text-decoration: none;
+}
+
+.contact-details a {
+  color: var(--navy);
+  font-weight: 900;
+}
+
+.contact-details a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .contact-form {
@@ -1292,6 +1305,35 @@ textarea:focus {
 .form-row.invalid small {
   color: #9f1d31;
   font-weight: 700;
+}
+
+.terms-row label {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  align-items: start;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.terms-row input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--navy);
+}
+
+.terms-row a {
+  color: var(--navy);
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.terms-row.invalid input {
+  box-shadow: 0 0 0 4px rgba(159, 29, 49, 0.12);
 }
 
 .form-status {
