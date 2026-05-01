@@ -719,12 +719,23 @@ function installPaymentReminderObserver(shouldShow) {
 
   if (!shouldShow) {
     reminder.classList.add("hidden");
+    reminder.classList.remove("is-visible");
+    window.removeEventListener("scroll", installPaymentReminderObserver.updateVisibility);
+    window.removeEventListener("resize", installPaymentReminderObserver.updateVisibility);
     return;
   }
 
   if (installPaymentReminderObserver.observer) {
     installPaymentReminderObserver.observer.disconnect();
   }
+
+  reminder.classList.remove("hidden");
+
+  installPaymentReminderObserver.updateVisibility = () => {
+    const rect = banner.getBoundingClientRect();
+    const shouldRemind = rect.bottom < 0;
+    reminder.classList.toggle("is-visible", shouldRemind);
+  };
 
   installPaymentReminderObserver.observer = new IntersectionObserver(
     ([entry]) => {
@@ -734,6 +745,9 @@ function installPaymentReminderObserver(shouldShow) {
     { threshold: 0.02 }
   );
   installPaymentReminderObserver.observer.observe(banner);
+  window.addEventListener("scroll", installPaymentReminderObserver.updateVisibility, { passive: true });
+  window.addEventListener("resize", installPaymentReminderObserver.updateVisibility);
+  installPaymentReminderObserver.updateVisibility();
 }
 
 function installPreviewScrollGuards() {
@@ -794,7 +808,12 @@ function installPreviewScrollGuards() {
 }
 
 document.querySelector("#scrollToPayment").addEventListener("click", () => {
-  document.querySelector("#paymentBanner").scrollIntoView({ behavior: "smooth", block: "center" });
+  document.querySelector("#paymentBanner").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+document.querySelector("#paymentStickyReminder").addEventListener("click", (event) => {
+  if (event.target.closest("button")) return;
+  document.querySelector("#paymentBanner").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
 toggleAnnotationButton.addEventListener("click", () => {
