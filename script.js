@@ -26,6 +26,7 @@ if ("IntersectionObserver" in window) {
 }
 
 installPreviewScrollGuards();
+installPortfolioTabs();
 
 const messages = {
   name: "Please add your name.",
@@ -120,6 +121,18 @@ function installPreviewScrollGuards() {
 
   let wheelTimer;
   let isWheelActive = false;
+  const hoveredPreviews = new Set();
+  const wheelIdleDelay = 110;
+  const hoverUnlockDelay = 40;
+
+  const schedulePreviewUnlock = (preview, delay = hoverUnlockDelay) => {
+    window.clearTimeout(preview.scrollGuardTimer);
+    preview.scrollGuardTimer = window.setTimeout(() => {
+      if (!isWheelActive && hoveredPreviews.has(preview)) {
+        preview.classList.add("is-preview-active");
+      }
+    }, delay);
+  };
 
   window.addEventListener(
     "wheel",
@@ -128,37 +141,59 @@ function installPreviewScrollGuards() {
       window.clearTimeout(wheelTimer);
       wheelTimer = window.setTimeout(() => {
         isWheelActive = false;
-      }, 360);
+        hoveredPreviews.forEach((preview) => schedulePreviewUnlock(preview, 0));
+      }, wheelIdleDelay);
     },
     { passive: true }
   );
 
   guardedPreviews.forEach((preview) => {
-    let hoverTimer;
-
     const disablePreview = () => {
-      window.clearTimeout(hoverTimer);
+      hoveredPreviews.delete(preview);
+      window.clearTimeout(preview.scrollGuardTimer);
       preview.classList.remove("is-preview-active");
     };
 
     preview.addEventListener("mouseenter", () => {
-      window.clearTimeout(hoverTimer);
-      hoverTimer = window.setTimeout(() => {
-        if (!isWheelActive) preview.classList.add("is-preview-active");
-      }, 520);
+      hoveredPreviews.add(preview);
+      schedulePreviewUnlock(preview);
     });
 
     preview.addEventListener("mousemove", () => {
       if (preview.classList.contains("is-preview-active")) return;
-      window.clearTimeout(hoverTimer);
-      hoverTimer = window.setTimeout(() => {
-        if (!isWheelActive) preview.classList.add("is-preview-active");
-      }, 520);
+      hoveredPreviews.add(preview);
+      schedulePreviewUnlock(preview);
     });
 
     preview.addEventListener("mouseleave", disablePreview);
     preview.addEventListener("wheel", () => {
       if (!preview.classList.contains("is-preview-active")) disablePreview();
+    });
+  });
+}
+
+function installPortfolioTabs() {
+  const tabs = document.querySelectorAll("[data-portfolio-tab]");
+  if (!tabs.length) return;
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const targetId = tab.dataset.portfolioTab;
+      const targetPanel = document.querySelector(`#${targetId}`);
+      if (!targetPanel) return;
+
+      tabs.forEach((button) => {
+        const isActive = button === tab;
+        button.classList.toggle("active", isActive);
+        button.setAttribute("aria-selected", String(isActive));
+      });
+
+      document.querySelectorAll(".portfolio-card").forEach((panel) => {
+        const isActive = panel === targetPanel;
+        panel.hidden = !isActive;
+        panel.classList.toggle("active", isActive);
+        panel.classList.remove("is-preview-active");
+      });
     });
   });
 }

@@ -178,8 +178,10 @@ function renderPaymentBanner(project) {
   const banner = document.querySelector("#paymentBanner");
   const link = document.querySelector("#paymentLink");
   const title = document.querySelector("#paymentBannerTitle");
+  const reminder = document.querySelector("#paymentStickyReminder");
   const shouldShow = Boolean(project.paymentRequestedAt);
   banner.classList.toggle("hidden", !shouldShow);
+  reminder.classList.toggle("hidden", !shouldShow);
   title.textContent = project.paymentPlanName
     ? `Pay for the ${project.paymentPlanName} to keep development moving.`
     : "Pay for us to keep developing it.";
@@ -190,6 +192,8 @@ function renderPaymentBanner(project) {
   } else {
     link.classList.add("hidden");
   }
+
+  installPaymentReminderObserver(shouldShow);
 }
 
 function renderPreview(project) {
@@ -708,12 +712,48 @@ function readableFileSize(bytes = 0) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function installPaymentReminderObserver(shouldShow) {
+  const banner = document.querySelector("#paymentBanner");
+  const reminder = document.querySelector("#paymentStickyReminder");
+  if (!banner || !reminder) return;
+
+  if (!shouldShow) {
+    reminder.classList.add("hidden");
+    return;
+  }
+
+  if (installPaymentReminderObserver.observer) {
+    installPaymentReminderObserver.observer.disconnect();
+  }
+
+  installPaymentReminderObserver.observer = new IntersectionObserver(
+    ([entry]) => {
+      const isPastBanner = entry.boundingClientRect.bottom < 0;
+      reminder.classList.toggle("is-visible", !entry.isIntersecting && isPastBanner);
+    },
+    { threshold: 0.02 }
+  );
+  installPaymentReminderObserver.observer.observe(banner);
+}
+
 function installPreviewScrollGuards() {
   const guardedPreviews = document.querySelectorAll("[data-scroll-guard]");
   if (!guardedPreviews.length) return;
 
   let wheelTimer;
   let isWheelActive = false;
+  const hoveredPreviews = new Set();
+  const wheelIdleDelay = 110;
+  const hoverUnlockDelay = 40;
+
+  const schedulePreviewUnlock = (preview, delay = hoverUnlockDelay) => {
+    window.clearTimeout(preview.scrollGuardTimer);
+    preview.scrollGuardTimer = window.setTimeout(() => {
+      if (!isWheelActive && hoveredPreviews.has(preview)) {
+        preview.classList.add("is-preview-active");
+      }
+    }, delay);
+  };
 
   window.addEventListener(
     "wheel",
@@ -722,32 +762,28 @@ function installPreviewScrollGuards() {
       window.clearTimeout(wheelTimer);
       wheelTimer = window.setTimeout(() => {
         isWheelActive = false;
-      }, 360);
+        hoveredPreviews.forEach((preview) => schedulePreviewUnlock(preview, 0));
+      }, wheelIdleDelay);
     },
     { passive: true }
   );
 
   guardedPreviews.forEach((preview) => {
-    let hoverTimer;
-
     const disablePreview = () => {
-      window.clearTimeout(hoverTimer);
+      hoveredPreviews.delete(preview);
+      window.clearTimeout(preview.scrollGuardTimer);
       preview.classList.remove("is-preview-active");
     };
 
     preview.addEventListener("mouseenter", () => {
-      window.clearTimeout(hoverTimer);
-      hoverTimer = window.setTimeout(() => {
-        if (!isWheelActive) preview.classList.add("is-preview-active");
-      }, 520);
+      hoveredPreviews.add(preview);
+      schedulePreviewUnlock(preview);
     });
 
     preview.addEventListener("mousemove", () => {
       if (preview.classList.contains("is-preview-active")) return;
-      window.clearTimeout(hoverTimer);
-      hoverTimer = window.setTimeout(() => {
-        if (!isWheelActive) preview.classList.add("is-preview-active");
-      }, 520);
+      hoveredPreviews.add(preview);
+      schedulePreviewUnlock(preview);
     });
 
     preview.addEventListener("mouseleave", disablePreview);
@@ -756,6 +792,10 @@ function installPreviewScrollGuards() {
     });
   });
 }
+
+document.querySelector("#scrollToPayment").addEventListener("click", () => {
+  document.querySelector("#paymentBanner").scrollIntoView({ behavior: "smooth", block: "center" });
+});
 
 toggleAnnotationButton.addEventListener("click", () => {
   setAnnotationMode(!annotationMode);

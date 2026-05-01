@@ -81,12 +81,7 @@ Deno.serve(async (request) => {
   return jsonResponse(200, { ok: true });
 });
 
-async function sendPaymentRequest(
-  body: Record<string, unknown>,
-  apiKey: string,
-  fromEmail: string,
-  ownerEmail: string,
-) {
+async function sendPaymentRequest(body, apiKey, fromEmail, ownerEmail) {
   const clientName = String(body.clientName || "").trim();
   const clientEmail = String(body.clientEmail || "").trim();
   const projectName = String(body.projectName || "Website project").trim();
@@ -148,7 +143,7 @@ async function sendPaymentRequest(
   return jsonResponse(200, { ok: true });
 }
 
-function jsonResponse(status: number, body: Record<string, unknown>) {
+function jsonResponse(status, body) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {

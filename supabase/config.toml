@@ -1,2 +1,8 @@
 [functions.contact]
 verify_jwt = false
+
+[functions.payment-status]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false

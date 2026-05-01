@@ -920,6 +920,43 @@ h3 {
   font-size: clamp(36px, 4.6vw, 62px);
 }
 
+.portfolio-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.portfolio-tabs button {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 0 18px;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.portfolio-tabs button:hover,
+.portfolio-tabs button.active {
+  border-color: rgba(18, 51, 95, 0.28);
+  background: var(--navy);
+  color: var(--white);
+}
+
+.portfolio-tabs button:focus-visible {
+  outline: 3px solid rgba(126, 200, 227, 0.52);
+  outline-offset: 3px;
+}
+
 .portfolio-stage {
   display: grid;
 }
@@ -1731,6 +1768,10 @@ textarea:focus {
   .portfolio-heading {
     align-items: start;
     flex-direction: column;
+  }
+
+  .portfolio-tabs {
+    justify-content: flex-start;
   }
 
   .portfolio-card {

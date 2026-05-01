@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Miel — Artisan Bakery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gloock&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:   oklch(0.965 0.018 80);
+      --cream2:  oklch(0.935 0.022 78);
+      --cream3:  oklch(0.905 0.026 76);
+      --brown:   oklch(0.20 0.028 52);
+      --brown-m: oklch(0.42 0.038 55);
+      --gold:    oklch(0.62 0.11 68);
+      --border:  oklch(0.87 0.025 77);
+      --ease:    cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--brown);
+      font-family: 'Jost', sans-serif;
+      font-size: 1rem;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    a   { text-decoration: none; color: inherit; }
+
+    /* ── NAV ────────────────────────────────── */
+    nav {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 5vw;
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.4s, box-shadow 0.4s;
+    }
+    nav.scrolled {
+      background: oklch(0.965 0.018 80 / 0.96);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 1px 24px oklch(0.20 0.028 52 / 0.07);
+    }
+    .nav-logo {
+      font-family: 'Gloock', serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.04em;
+      color: var(--brown);
+    }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--brown-m);
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--brown); }
+    .nav-order {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.55rem 1.25rem;
+      border: 1.5px solid var(--brown);
+      border-radius: 2rem;
+      color: var(--brown);
+      background: transparent;
+      cursor: pointer;
+      transition: background 0.22s, color 0.22s;
+    }
+    .nav-order:hover { background: var(--brown); color: var(--cream); }
+
+    /* ── HERO ───────────────────────────────── */
+    .hero {
+      height: 100svh;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+    }
+    .hero-img {
+      position: absolute;
+      inset: 0;
+    }
+    .hero-img img { object-position: center 60%; }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        oklch(0.12 0.020 52 / 0.82) 0%,
+        oklch(0.12 0.020 52 / 0.30) 50%,
+        transparent 100%
+      );
+    }
+    .hero-content {
+      position: relative;
+      padding: 0 5vw 7vh;
+      color: var(--cream);
+    }
+    .hero-tag {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: oklch(0.88 0.05 75);
+      margin-bottom: 1.25rem;
+    }
+    .hero-title {
+      font-family: 'Gloock', serif;
+      font-size: clamp(3.5rem, 9vw, 8rem);
+      line-height: 0.95;
+      letter-spacing: -0.01em;
+      margin-bottom: 1.5rem;
+      max-width: 12ch;
+    }
+    .hero-desc {
+      font-size: clamp(0.95rem, 1.5vw, 1.125rem);
+      font-weight: 300;
+      color: oklch(0.88 0.012 78);
+      max-width: 36ch;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+    .hero-btns { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-block;
+      padding: 0.85rem 2.25rem;
+      background: var(--gold);
+      color: var(--cream);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      border-radius: 2rem;
+      transition: background 0.22s, transform 0.22s var(--ease);
+    }
+    .btn-primary:hover { background: oklch(0.56 0.11 68); transform: translateY(-1px); }
+    .btn-ghost {
+      display: inline-block;
+      padding: 0.85rem 2.25rem;
+      border: 1.5px solid oklch(0.88 0.012 78 / 0.5);
+      color: oklch(0.90 0.012 78);
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      border-radius: 2rem;
+      transition: border-color 0.22s, color 0.22s;
+    }
+    .btn-ghost:hover { border-color: var(--cream); color: var(--cream); }
+
+    /* scroll cue */
+    .scroll-cue {
+      position: absolute;
+      bottom: 2.5rem;
+      right: 5vw;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: oklch(0.80 0.012 78);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+    }
+    .scroll-cue::before {
+      content: '';
+      display: block;
+      width: 1px;
+      height: 3rem;
+      background: oklch(0.80 0.012 78 / 0.5);
+    }
+
+    /* ── MARQUEE ────────────────────────────── */
+    .marquee-wrap {
+      overflow: hidden;
+      background: var(--brown);
+      padding: 1rem 0;
+      white-space: nowrap;
+    }
+    .marquee-inner {
+      display: inline-flex;
+      gap: 2.5rem;
+      animation: scroll 22s linear infinite;
+    }
+    .marquee-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 2.5rem;
+      font-family: 'Gloock', serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.06em;
+      color: oklch(0.75 0.028 68);
+    }
+    .marquee-item span { color: var(--gold); font-size: 0.7rem; }
+    @keyframes scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── SECTION BASE ───────────────────────── */
+    section { padding: 8vw 5vw; }
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Gloock', serif;
+      font-size: clamp(2rem, 4.5vw, 3.75rem);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+
+    /* ── OFFERINGS ──────────────────────────── */
+    .offerings { background: var(--cream2); }
+    .offerings-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-bottom: 4rem;
+      flex-wrap: wrap;
+    }
+    .offerings-head p {
+      max-width: 36ch;
+      font-size: 1.0625rem;
+      color: var(--brown-m);
+      font-weight: 300;
+      line-height: 1.75;
+    }
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .item-card {
+      background: var(--cream);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: transform 0.35s var(--ease), box-shadow 0.35s;
+    }
+    .item-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px oklch(0.20 0.028 52 / 0.12);
+    }
+    .item-photo { height: 260px; overflow: hidden; }
+    .item-photo img { transition: transform 0.55s var(--ease); }
+    .item-card:hover .item-photo img { transform: scale(1.06); }
+    .item-body { padding: 1.5rem 1.5rem 2rem; }
+    .item-category {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+    .item-name {
+      font-family: 'Gloock', serif;
+      font-size: 1.35rem;
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.01em;
+    }
+    .item-desc {
+      font-size: 0.9rem;
+      color: var(--brown-m);
+      font-weight: 300;
+      line-height: 1.65;
+    }
+
+    /* ── ABOUT ──────────────────────────────── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8vw;
+      align-items: center;
+    }
+    .about-photo {
+      height: 560px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .about-text { display: flex; flex-direction: column; gap: 1.5rem; }
+    .about-text p {
+      font-size: 1.0625rem;
+      font-weight: 300;
+      color: var(--brown-m);
+      line-height: 1.8;
+      max-width: 48ch;
+    }
+    .about-stat-row {
+      display: flex;
+      gap: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .stat-num {
+      font-family: 'Gloock', serif;
+      font-size: 2.5rem;
+      line-height: 1;
+      color: var(--gold);
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--brown-m);
+      margin-top: 0.35rem;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── FEATURE STRIP ──────────────────────── */
+    .feature-strip {
+      background: var(--brown);
+      color: var(--cream);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 0;
+    }
+    .feature-item {
+      padding: 4rem 3.5rem;
+      border-right: 1px solid oklch(0.30 0.020 52);
+    }
+    .feature-item:last-child { border-right: none; }
+    .feature-icon {
+      font-size: 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .feature-title {
+      font-family: 'Gloock', serif;
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+      color: var(--cream);
+    }
+    .feature-body {
+      font-size: 0.9rem;
+      font-weight: 300;
+      color: oklch(0.72 0.018 72);
+      line-height: 1.7;
+    }
+
+    /* ── GALLERY ────────────────────────────── */
+    .gallery {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr;
+      grid-template-rows: 320px 320px;
+      gap: 0.75rem;
+      padding: 0;
+    }
+    .gallery-item {
+      overflow: hidden;
+      position: relative;
+    }
+    .gallery-item:first-child { grid-row: span 2; }
+    .gallery-item img { transition: transform 0.6s var(--ease); }
+    .gallery-item:hover img { transform: scale(1.05); }
+
+    /* ── VISIT ──────────────────────────────── */
+    .visit { background: var(--cream2); }
+    .visit-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8vw;
+      align-items: start;
+      margin-top: 3.5rem;
+    }
+    .visit-block h3 {
+      font-family: 'Gloock', serif;
+      font-size: 1.35rem;
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.01em;
+    }
+    .visit-block p,
+    .visit-block address {
+      font-size: 0.975rem;
+      font-weight: 300;
+      color: var(--brown-m);
+      line-height: 1.8;
+      font-style: normal;
+    }
+    .hours-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .hours-row:last-child { border-bottom: none; }
+    .hours-day { font-weight: 500; }
+    .hours-time { color: var(--brown-m); font-weight: 300; }
+    .map-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border-bottom: 1px solid var(--gold);
+      padding-bottom: 0.15rem;
+      transition: opacity 0.2s;
+    }
+    .map-link:hover { opacity: 0.7; }
+
+    /* ── FOOTER ─────────────────────────────── */
+    footer {
+      background: var(--brown);
+      color: oklch(0.72 0.018 72);
+      padding: 4rem 5vw 3rem;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 4rem;
+    }
+    .footer-brand .nav-logo {
+      color: var(--cream);
+      font-size: 1.6rem;
+      display: block;
+      margin-bottom: 0.75rem;
+    }
+    .footer-brand p {
+      font-size: 0.875rem;
+      font-weight: 300;
+      line-height: 1.7;
+      max-width: 28ch;
+    }
+    .footer-col h4 {
+      font-family: 'Gloock', serif;
+      font-size: 1rem;
+      color: var(--cream);
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.02em;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; }
+    .footer-col li a {
+      font-size: 0.875rem;
+      font-weight: 300;
+      transition: color 0.2s;
+    }
+    .footer-col li a:hover { color: var(--cream); }
+    .footer-bottom {
+      background: var(--brown);
+      border-top: 1px solid oklch(0.28 0.022 52);
+      padding: 1.25rem 5vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-bottom p {
+      font-size: 0.775rem;
+      color: oklch(0.50 0.018 55);
+      letter-spacing: 0.03em;
+    }
+
+    /* ── REVEAL ANIMATIONS ──────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(2rem);
+      transition: opacity 0.75s var(--ease), transform 0.75s var(--ease);
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ─────────────────────────── */
+    @media (max-width: 1024px) {
+      .items-grid { grid-template-columns: repeat(2, 1fr); }
+      footer { grid-template-columns: 1fr 1fr; }
+      .footer-brand { grid-column: span 2; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .about-grid, .visit-grid { grid-template-columns: 1fr; }
+      .about-photo { height: 360px; }
+      .feature-strip { grid-template-columns: 1fr; }
+      .feature-item { border-right: none; border-bottom: 1px solid oklch(0.30 0.020 52); padding: 2.5rem 2rem; }
+      .feature-item:last-child { border-bottom: none; }
+      .gallery { grid-template-columns: 1fr 1fr; grid-template-rows: 220px 220px 220px; }
+      .gallery-item:first-child { grid-row: span 1; }
+      footer { grid-template-columns: 1fr; gap: 2.5rem; }
+      .footer-brand { grid-column: span 1; }
+      .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+    @media (max-width: 560px) {
+      .items-grid { grid-template-columns: 1fr; }
+      .gallery { grid-template-columns: 1fr; grid-template-rows: auto; }
+      .gallery-item { height: 240px; }
+      .scroll-cue { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <span class="nav-logo">Miel</span>
+    <ul class="nav-links">
+      <li><a href="#offerings">Menu</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#visit">Visit</a></li>
+    </ul>
+    <a href="#visit" class="nav-order">Order</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-img">
+      <img
+        src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=2000&q=85"
+        alt="Fresh artisan bread loaves at Miel bakery"
+        loading="eager"
+      >
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-tag">Est. 2019 &mdash; London Fields</p>
+      <h1 class="hero-title">Baked with hours, not shortcuts.</h1>
+      <p class="hero-desc">
+        Small-batch sourdough, seasonal pastries, and slow-fermented breads. Made before dawn, gone by noon.
+      </p>
+      <div class="hero-btns">
+        <a href="#offerings" class="btn-primary">See the menu</a>
+        <a href="#about" class="btn-ghost">Our story</a>
+      </div>
+    </div>
+    <div class="scroll-cue" aria-hidden="true">Scroll</div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrap" aria-hidden="true">
+    <div class="marquee-inner">
+      <span class="marquee-item">Country Sourdough <span>✦</span></span>
+      <span class="marquee-item">Almond Croissant <span>✦</span></span>
+      <span class="marquee-item">Brown Butter Financier <span>✦</span></span>
+      <span class="marquee-item">Rye & Honey Loaf <span>✦</span></span>
+      <span class="marquee-item">Seasonal Tarts <span>✦</span></span>
+      <span class="marquee-item">Fresh-Milled Flour <span>✦</span></span>
+      <span class="marquee-item">Country Sourdough <span>✦</span></span>
+      <span class="marquee-item">Almond Croissant <span>✦</span></span>
+      <span class="marquee-item">Brown Butter Financier <span>✦</span></span>
+      <span class="marquee-item">Rye & Honey Loaf <span>✦</span></span>
+      <span class="marquee-item">Seasonal Tarts <span>✦</span></span>
+      <span class="marquee-item">Fresh-Milled Flour <span>✦</span></span>
+    </div>
+  </div>
+
+  <!-- OFFERINGS -->
+  <section class="offerings" id="offerings">
+    <div class="offerings-head reveal">
+      <div>
+        <p class="section-label">Our menu</p>
+        <h2 class="section-title">Made every morning,<br>never twice the same.</h2>
+      </div>
+      <p>Everything baked in-house from carefully sourced grain. We mill some of our own flour on-site and change the specials with the season.</p>
+    </div>
+    <div class="items-grid">
+      <div class="item-card reveal">
+        <div class="item-photo">
+          <img
+            src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=800&q=80"
+            alt="Country sourdough loaf with open crumb"
+            loading="lazy"
+          >
+        </div>
+        <div class="item-body">
+          <p class="item-category">Bread</p>
+          <h3 class="item-name">Country Sourdough</h3>
+          <p class="item-desc">36-hour cold ferment, 80% hydration, milled on-site. Thick crust, open crumb. Available whole or half-loaf.</p>
+        </div>
+      </div>
+      <div class="item-card reveal">
+        <div class="item-photo">
+          <img
+            src="https://images.unsplash.com/photo-1516684732162-798a0062be99?auto=format&fit=crop&w=800&q=80"
+            alt="Freshly baked almond croissants"
+            loading="lazy"
+          >
+        </div>
+        <div class="item-body">
+          <p class="item-category">Pastry</p>
+          <h3 class="item-name">Almond Croissant</h3>
+          <p class="item-desc">Day-old croissants re-baked with house frangipane and toasted flaked almonds. Crisp, rich, a little indulgent.</p>
+        </div>
+      </div>
+      <div class="item-card reveal">
+        <div class="item-photo">
+          <img
+            src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=800&q=80"
+            alt="Seasonal fruit tart with custard"
+            loading="lazy"
+          >
+        </div>
+        <div class="item-body">
+          <p class="item-category">Seasonal</p>
+          <h3 class="item-name">Fruit Tart</h3>
+          <p class="item-desc">Buttery sablé shell, vanilla pastry cream, fruit sourced from our partner farm. Changes weekly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="about-grid">
+      <div class="about-photo reveal">
+        <img
+          src="https://images.unsplash.com/photo-1621303837174-89787a7d4729?auto=format&fit=crop&w=900&q=80"
+          alt="Baker shaping dough by hand in the Miel kitchen"
+          loading="lazy"
+        >
+      </div>
+      <div class="about-text reveal">
+        <div>
+          <p class="section-label">Our story</p>
+          <h2 class="section-title">Started at 4am. Still is.</h2>
+        </div>
+        <p>
+          Miel opened in 2019 with one oven, one baker, and a firm belief that good bread takes time. We never set out to grow quickly. We set out to bake something worth waking up for.
+        </p>
+        <p>
+          Today we're a small team of eight, still working the same unsociable hours, still sourcing from the same handful of farms we've trusted from the start. Some things shouldn't be optimised.
+        </p>
+        <div class="about-stat-row">
+          <div>
+            <div class="stat-num">6</div>
+            <div class="stat-label">Years open</div>
+          </div>
+          <div>
+            <div class="stat-num">8</div>
+            <div class="stat-label">Bakers</div>
+          </div>
+          <div>
+            <div class="stat-num">4am</div>
+            <div class="stat-label">Start time</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURE STRIP -->
+  <div class="feature-strip" aria-label="What makes us different">
+    <div class="feature-item reveal">
+      <div class="feature-icon" aria-hidden="true">🌾</div>
+      <h3 class="feature-title">Fresh-Milled Flour</h3>
+      <p class="feature-body">We mill a portion of our grain in-house every morning. Freshly milled flour has a complexity you can taste.</p>
+    </div>
+    <div class="feature-item reveal">
+      <div class="feature-icon" aria-hidden="true">🕓</div>
+      <h3 class="feature-title">Long Fermentation</h3>
+      <p class="feature-body">Nothing here is rushed. Our sourdough cold-ferments for a minimum of 36 hours before it touches the oven.</p>
+    </div>
+    <div class="feature-item reveal">
+      <div class="feature-icon" aria-hidden="true">🤝</div>
+      <h3 class="feature-title">Direct from Farms</h3>
+      <p class="feature-body">We buy from three farms within 80 miles of London. We visit them. We know their names. That matters to us.</p>
+    </div>
+  </div>
+
+  <!-- GALLERY -->
+  <div class="gallery" aria-label="Photo gallery">
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?auto=format&fit=crop&w=800&q=80" alt="Baker at work" loading="lazy">
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1586444248902-2f64eddc13df?auto=format&fit=crop&w=700&q=80" alt="Pastry selection" loading="lazy">
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1604908177453-7462950a6a3b?auto=format&fit=crop&w=700&q=80" alt="Coffee and croissant" loading="lazy">
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=700&q=80" alt="Loaves cooling on rack" loading="lazy">
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=700&q=80" alt="Cake slice close-up" loading="lazy">
+    </div>
+  </div>
+
+  <!-- VISIT -->
+  <section class="visit" id="visit">
+    <div class="reveal">
+      <p class="section-label">Find us</p>
+      <h2 class="section-title">Come early. We mean it.</h2>
+    </div>
+    <div class="visit-grid">
+      <div class="reveal">
+        <div class="visit-block">
+          <h3>Hours</h3>
+          <div>
+            <div class="hours-row"><span class="hours-day">Monday</span><span class="hours-time">Closed</span></div>
+            <div class="hours-row"><span class="hours-day">Tue &ndash; Fri</span><span class="hours-time">7:30 &ndash; 14:00</span></div>
+            <div class="hours-row"><span class="hours-day">Saturday</span><span class="hours-time">7:00 &ndash; 14:00</span></div>
+            <div class="hours-row"><span class="hours-day">Sunday</span><span class="hours-time">8:00 &ndash; 13:00</span></div>
+          </div>
+          <p style="margin-top:1.5rem;font-size:0.85rem;color:var(--brown-m);font-weight:300;">
+            Sell-out times vary. Sourdough typically goes by 11am on weekends.
+          </p>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="visit-block">
+          <h3>Address</h3>
+          <address>
+            14 Mentmore Terrace<br>
+            London Fields<br>
+            London, E8 3PN
+          </address>
+          <a href="#" class="map-link">Open in Maps &rarr;</a>
+        </div>
+        <div class="visit-block" style="margin-top:2.5rem;">
+          <h3>Get in touch</h3>
+          <p><a href="mailto:hello@miel.bakery" style="color:var(--gold);">hello@miel.bakery</a></p>
+          <p style="margin-top:0.5rem;">For wholesale enquiries and private orders only. We don't take reservations.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">
+      <span class="nav-logo">Miel</span>
+      <p>Artisan bakery, London Fields. Open since 2019. Baking until we run out.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Menu</h4>
+      <ul>
+        <li><a href="#offerings">Bread</a></li>
+        <li><a href="#offerings">Pastries</a></li>
+        <li><a href="#offerings">Seasonal</a></li>
+        <li><a href="#offerings">Wholesale</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Bakery</h4>
+      <ul>
+        <li><a href="#about">Our story</a></li>
+        <li><a href="#visit">Visit us</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">Newsletter</a></li>
+      </ul>
+    </div>
+  </footer>
+  <div class="footer-bottom">
+    <p>&copy; 2026 Miel Bakery Ltd. All rights reserved.</p>
+    <p>London Fields, E8</p>
+  </div>
+
+  <script>
+    // Nav scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    // Scroll reveals
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal').forEach((el, i) => {
+      el.style.transitionDelay = `${(i % 4) * 0.08}s`;
+      io.observe(el);
+    });
+  </script>
+
+</body>
+</html>

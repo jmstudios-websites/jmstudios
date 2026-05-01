@@ -42,6 +42,7 @@ const paymentRequestStatus = document.querySelector("#paymentRequestStatus");
 const starterPaymentLink = document.querySelector("#starterPaymentLink");
 const fullPaymentLink = document.querySelector("#fullPaymentLink");
 const carePaymentLink = document.querySelector("#carePaymentLink");
+const paymentStatusSummary = document.querySelector("#paymentStatusSummary");
 
 installAdminGate();
 installPreviewScrollGuards();
@@ -516,6 +517,8 @@ function render() {
   renderList();
   fillForm(project);
   renderDashboardAccess(project);
+  renderPaymentStatus(project);
+  refreshPaymentStatus(project);
 }
 
 function setActiveProject(nextProject) {
@@ -867,6 +870,18 @@ function installPreviewScrollGuards() {
 
   let wheelTimer;
   let isWheelActive = false;
+  const hoveredPreviews = new Set();
+  const wheelIdleDelay = 110;
+  const hoverUnlockDelay = 40;
+
+  const schedulePreviewUnlock = (preview, delay = hoverUnlockDelay) => {
+    window.clearTimeout(preview.scrollGuardTimer);
+    preview.scrollGuardTimer = window.setTimeout(() => {
+      if (!isWheelActive && hoveredPreviews.has(preview)) {
+        preview.classList.add("is-preview-active");
+      }
+    }, delay);
+  };
 
   window.addEventListener(
     "wheel",
@@ -875,32 +890,28 @@ function installPreviewScrollGuards() {
       window.clearTimeout(wheelTimer);
       wheelTimer = window.setTimeout(() => {
         isWheelActive = false;
-      }, 360);
+        hoveredPreviews.forEach((preview) => schedulePreviewUnlock(preview, 0));
+      }, wheelIdleDelay);
     },
     { passive: true }
   );
 
   guardedPreviews.forEach((preview) => {
-    let hoverTimer;
-
     const disablePreview = () => {
-      window.clearTimeout(hoverTimer);
+      hoveredPreviews.delete(preview);
+      window.clearTimeout(preview.scrollGuardTimer);
       preview.classList.remove("is-preview-active");
     };
 
     preview.addEventListener("mouseenter", () => {
-      window.clearTimeout(hoverTimer);
-      hoverTimer = window.setTimeout(() => {
-        if (!isWheelActive) preview.classList.add("is-preview-active");
-      }, 520);
+      hoveredPreviews.add(preview);
+      schedulePreviewUnlock(preview);
     });
 
     preview.addEventListener("mousemove", () => {
       if (preview.classList.contains("is-preview-active")) return;
-      window.clearTimeout(hoverTimer);
-      hoverTimer = window.setTimeout(() => {
-        if (!isWheelActive) preview.classList.add("is-preview-active");
-      }, 520);
+      hoveredPreviews.add(preview);
+      schedulePreviewUnlock(preview);
     });
 
     preview.addEventListener("mouseleave", disablePreview);
@@ -927,10 +938,73 @@ function setPaymentStatus(message) {
   }, 4200);
 }
 
+function renderPaymentStatus(project) {
+  const paidAt = project.paymentPaidAt;
+  const planName = project.paymentPlanName || "Selected package";
+  paymentStatusSummary.classList.toggle("paid", Boolean(paidAt));
+  paymentStatusSummary.innerHTML = paidAt
+    ? `
+      <strong>Payment received</strong>
+      <p>${escapeHtml(planName)} was paid on ${escapeHtml(formatDateTime(paidAt))}.</p>
+    `
+    : `
+      <strong>Payment status</strong>
+      <p>No payment has been recorded for this dashboard yet.</p>
+    `;
+}
+
+async function refreshPaymentStatus(project) {
+  if (!window.JM_PAYMENT_STATUS_ENDPOINT || !project?.slug) return;
+
+  try {
+    const url = new URL(window.JM_PAYMENT_STATUS_ENDPOINT);
+    url.searchParams.set("slug", project.slug);
+    const response = await fetch(url.href);
+    if (!response.ok) return;
+    const status = await response.json();
+    if (!status?.paid) return;
+
+    const index = projects.findIndex((savedProject) => savedProject.id === project.id);
+    if (index < 0) return;
+    projects[index] = {
+      ...projects[index],
+      paymentPaidAt: status.paidAt,
+      paymentAmount: status.amount,
+      paymentCurrency: status.currency,
+      paymentPlanName: status.planName || projects[index].paymentPlanName,
+      stripeSessionId: status.stripeSessionId,
+    };
+    saveProjects();
+    renderPaymentStatus(projects[index]);
+  } catch (error) {
+    // Payment status is optional until the Supabase webhook is deployed.
+  }
+}
+
+function paymentUrlForProject(baseUrl, project, selectedPlan) {
+  const url = new URL(baseUrl);
+  url.searchParams.set("client_reference_id", `${project.slug}__${selectedPlan}`);
+  url.searchParams.set("prefilled_email", project.clientEmail);
+  url.searchParams.set("utm_source", "jm_studios_dashboard");
+  url.searchParams.set("utm_campaign", selectedPlan);
+  return url.href;
+}
+
+function formatDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "unknown date";
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
 async function askForPayment(selectedPlan) {
   const project = projectFromForm();
   const paymentLinks = savePaymentLinks();
-  const paymentUrl = paymentLinks[selectedPlan] || "";
+  const basePaymentUrl = paymentLinks[selectedPlan] || "";
   const planName = paymentPlans[selectedPlan] || "Website payment";
 
   if (!project.clientEmail) {
@@ -938,10 +1012,12 @@ async function askForPayment(selectedPlan) {
     return;
   }
 
-  if (!paymentUrl) {
+  if (!basePaymentUrl) {
     setPaymentStatus(`Add the ${planName} Stripe payment link first.`);
     return;
   }
+
+  const paymentUrl = paymentUrlForProject(basePaymentUrl, project, selectedPlan);
 
   const endpoint = window.JM_CONTACT_ENDPOINT || "/api/contact";
   const paymentRequestedAt = new Date().toISOString();
@@ -983,7 +1059,10 @@ async function askForPayment(selectedPlan) {
     }
     setPaymentStatus("Payment request sent and dashboard notice is live.");
   } catch (error) {
-    setPaymentStatus(`Dashboard notice is live, but email failed: ${error.message}`);
+    const deployHint = error.message === "Missing required fields."
+      ? "Deploy the updated Supabase contact function; the live one is still the old contact-form-only code."
+      : error.message;
+    setPaymentStatus(`Dashboard notice is live, but email failed: ${deployHint}`);
   }
 }
 
@@ -1104,6 +1183,11 @@ window.addEventListener("storage", (event) => {
   projects = loadProjects();
   render();
 });
+
+window.setInterval(() => {
+  const project = getActiveProject();
+  if (project) refreshPaymentStatus(project);
+}, 30000);
 
 document.querySelector("#exportData").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(projects, null, 2)], { type: "application/json" });

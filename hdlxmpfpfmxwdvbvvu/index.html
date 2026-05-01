@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="portal.css?v=5" />
+    <link rel="stylesheet" href="portal.css?v=6" />
   </head>
   <body class="admin-body is-locked">
     <header class="portal-topbar">
@@ -167,6 +167,10 @@
               </label>
               <button class="text-button" id="savePaymentLinks" type="button">Save payment links</button>
             </div>
+            <article class="payment-status-card" id="paymentStatusSummary">
+              <strong>Payment status</strong>
+              <p>No payment has been recorded for this dashboard yet.</p>
+            </article>
             <p class="portal-status" id="paymentRequestStatus" role="status" aria-live="polite"></p>
           </section>
 
@@ -248,6 +252,6 @@
     </main>
 
     <script src="contact-config.js"></script>
-    <script src="admin.js?v=6"></script>
+    <script src="admin.js?v=7"></script>
   </body>
 </html>

@@ -313,10 +313,21 @@
               <p class="eyebrow">Portfolio</p>
               <h2>Browse example builds.</h2>
             </div>
+            <div class="portfolio-tabs" role="tablist" aria-label="Portfolio previews">
+              <button class="active" type="button" role="tab" aria-selected="true" aria-controls="portfolio-fileo" data-portfolio-tab="portfolio-fileo">
+                Fileo
+              </button>
+              <button type="button" role="tab" aria-selected="false" aria-controls="portfolio-miel" data-portfolio-tab="portfolio-miel">
+                Miel
+              </button>
+              <button type="button" role="tab" aria-selected="false" aria-controls="portfolio-petal" data-portfolio-tab="portfolio-petal">
+                Petal
+              </button>
+            </div>
           </div>
 
           <div class="portfolio-stage">
-            <article class="portfolio-card active">
+            <article class="portfolio-card active" id="portfolio-fileo" role="tabpanel" aria-label="Fileo portfolio preview">
               <div class="portfolio-browser live-portfolio-browser" data-scroll-guard>
                 <div class="portfolio-browser-top">
                   <span></span>
@@ -328,6 +339,38 @@
                   class="portfolio-live-frame"
                   src="portfolio/fileo/index.html"
                   title="Fileo portfolio site preview"
+                  loading="lazy"
+                ></iframe>
+              </div>
+            </article>
+            <article class="portfolio-card" id="portfolio-miel" role="tabpanel" aria-label="Miel bakery portfolio preview" hidden>
+              <div class="portfolio-browser live-portfolio-browser" data-scroll-guard>
+                <div class="portfolio-browser-top">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <p>Miel — Artisan Bakery</p>
+                </div>
+                <iframe
+                  class="portfolio-live-frame"
+                  src="portfolio/miel/index.html"
+                  title="Miel bakery portfolio site preview"
+                  loading="lazy"
+                ></iframe>
+              </div>
+            </article>
+            <article class="portfolio-card" id="portfolio-petal" role="tabpanel" aria-label="Petal plant shop portfolio preview" hidden>
+              <div class="portfolio-browser live-portfolio-browser" data-scroll-guard>
+                <div class="portfolio-browser-top">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <p>Petal — Plants Delivered</p>
+                </div>
+                <iframe
+                  class="portfolio-live-frame"
+                  src="portfolio/petal/index.html"
+                  title="Petal plant shop portfolio site preview"
                   loading="lazy"
                 ></iframe>
               </div>

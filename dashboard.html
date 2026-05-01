@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="portal.css?v=5" />
+    <link rel="stylesheet" href="portal.css?v=6" />
   </head>
   <body class="dashboard-body client-dashboard-body">
     <header class="portal-topbar client-topbar">
@@ -56,6 +56,10 @@
                 </div>
                 <a class="solid-button hidden" id="paymentLink" href="#" target="_blank" rel="noreferrer">Pay with Stripe</a>
               </article>
+              <aside class="payment-sticky-reminder hidden" id="paymentStickyReminder" aria-live="polite">
+                <span>Payment pending</span>
+                <button class="text-button" id="scrollToPayment" type="button">Go up to pay</button>
+              </aside>
 
               <article class="mock-project-intro">
                 <p class="eyebrow" id="clientName"></p>
@@ -163,6 +167,6 @@
       </section>
     </main>
 
-    <script src="dashboard.js?v=7"></script>
+    <script src="dashboard.js?v=8"></script>
   </body>
 </html>
