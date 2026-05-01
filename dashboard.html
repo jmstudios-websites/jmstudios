@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="portal.css?v=3" />
+    <link rel="stylesheet" href="portal.css?v=4" />
   </head>
   <body class="dashboard-body client-dashboard-body">
     <header class="portal-topbar client-topbar">
@@ -48,6 +48,15 @@
               <p id="projectName">clientsite.com</p>
             </div>
             <div class="client-browser-content">
+              <article class="payment-banner hidden" id="paymentBanner">
+                <div>
+                  <span>Payment requested</span>
+                  <strong id="paymentBannerTitle">Pay for us to keep developing it.</strong>
+                  <p>JM Studios has sent the first working preview. Complete the payment to keep the build moving.</p>
+                </div>
+                <a class="solid-button hidden" id="paymentLink" href="#" target="_blank" rel="noreferrer">Pay with Stripe</a>
+              </article>
+
               <article class="mock-project-intro">
                 <p class="eyebrow" id="clientName"></p>
                 <h1 id="projectTitle"></h1>
@@ -80,7 +89,10 @@
               </article>
               <article class="mock-site-preview" id="preview">
                 <div class="mock-preview-top">
-                  <span id="livePreviewAddress">Preview URL not set</span>
+                  <div class="preview-title-stack">
+                    <span id="livePreviewAddress">Preview URL not set</span>
+                    <small id="previewUpdatedAt">Last updated: Not yet</small>
+                  </div>
                   <div class="preview-actions">
                     <button class="text-button hidden" id="toggleAnnotation" type="button">Annotate</button>
                     <a class="hidden" id="openPreviewLink" href="#" target="_blank" rel="noreferrer">Open</a>
@@ -151,6 +163,6 @@
       </section>
     </main>
 
-    <script src="dashboard.js?v=3"></script>
+    <script src="dashboard.js?v=6"></script>
   </body>
 </html>

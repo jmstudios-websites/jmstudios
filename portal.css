@@ -369,6 +369,7 @@ textarea:focus {
 .task-editor,
 .setup-editor,
 .file-request-editor,
+.payment-request-panel,
 .website-preview-editor,
 .share-panel {
   border-top: 1px solid var(--line);
@@ -432,6 +433,13 @@ textarea:focus {
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.78);
   padding: 14px;
+}
+
+.payment-plan-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
 }
 
 .file-request-row {
@@ -772,6 +780,43 @@ textarea:focus {
   padding: 8px 2px 16px;
 }
 
+.payment-banner {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid rgba(18, 51, 95, 0.2);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(232, 238, 246, 0.96), rgba(255, 255, 255, 0.9));
+  padding: 18px 20px;
+}
+
+.payment-banner span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.payment-banner strong {
+  display: block;
+  color: var(--navy-deep);
+  font-size: clamp(20px, 2.2vw, 28px);
+  line-height: 1.1;
+}
+
+.payment-banner p {
+  max-width: 620px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
 .mock-project-intro h1 {
   max-width: 980px;
   font-size: clamp(44px, 6vw, 86px);
@@ -870,14 +915,26 @@ textarea:focus {
   gap: 8px;
 }
 
+.preview-title-stack {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
 .mock-preview-top span,
-.mock-preview-top a {
+.mock-preview-top a,
+.mock-preview-top small {
   overflow: hidden;
   color: var(--muted);
   font-size: 12px;
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.mock-preview-top small {
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .mock-preview-top a {
@@ -1239,7 +1296,8 @@ textarea:focus {
   .form-grid,
   .task-row,
   .setup-row,
-  .file-request-row {
+  .file-request-row,
+  .payment-plan-links {
     grid-template-columns: 1fr;
   }
 
@@ -1293,6 +1351,11 @@ textarea:focus {
   .client-browser-content {
     grid-template-columns: 1fr;
     padding: 14px;
+  }
+
+  .payment-banner {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .mock-status-card {

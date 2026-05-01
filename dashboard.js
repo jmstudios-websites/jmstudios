@@ -124,6 +124,10 @@ function renderProject(project) {
   document.querySelector("#heroProgress").style.width = `${Math.max(progress, 8)}%`;
   document.querySelector("#progressPercent").textContent = `${progress}%`;
   document.querySelector("#progressBar").style.width = `${progress}%`;
+  document.querySelector("#previewUpdatedAt").textContent = project.updatedAt
+    ? `Last updated: ${formatDateTime(project.updatedAt)}`
+    : "Last updated: Not yet";
+  renderPaymentBanner(project);
   document.querySelector("#launchDate").textContent = project.dueDate
     ? `Target launch: ${formatDate(project.dueDate)}`
     : "Launch date will be confirmed.";
@@ -166,6 +170,24 @@ function renderSetupChecks(checks) {
     `;
     setupList.append(row);
   });
+}
+
+function renderPaymentBanner(project) {
+  const banner = document.querySelector("#paymentBanner");
+  const link = document.querySelector("#paymentLink");
+  const title = document.querySelector("#paymentBannerTitle");
+  const shouldShow = Boolean(project.paymentRequestedAt);
+  banner.classList.toggle("hidden", !shouldShow);
+  title.textContent = project.paymentPlanName
+    ? `Pay for the ${project.paymentPlanName} to keep development moving.`
+    : "Pay for us to keep developing it.";
+
+  if (project.paymentUrl) {
+    link.href = project.paymentUrl;
+    link.classList.remove("hidden");
+  } else {
+    link.classList.add("hidden");
+  }
 }
 
 function renderPreview(project) {
@@ -505,6 +527,17 @@ function formatDate(value) {
   return new Intl.DateTimeFormat("en", { month: "long", day: "numeric", year: "numeric" }).format(
     new Date(`${value}T12:00:00`)
   );
+}
+
+function formatDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not yet";
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function escapeHtml(value = "") {

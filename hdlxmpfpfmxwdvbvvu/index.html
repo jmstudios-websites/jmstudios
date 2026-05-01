@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="portal.css?v=3" />
+    <link rel="stylesheet" href="portal.css?v=4" />
   </head>
   <body class="admin-body is-locked">
     <header class="portal-topbar">
@@ -89,6 +89,14 @@
               Preview URL
               <input name="previewUrl" type="url" autocomplete="off" placeholder="https://preview.example.com" />
             </label>
+            <label>
+              Payment plan to request
+              <select name="paymentPlan">
+                <option value="starter">Starter website</option>
+                <option value="full">Full website build</option>
+                <option value="care">Care package</option>
+              </select>
+            </label>
           </div>
 
           <label class="wide-field">
@@ -135,6 +143,35 @@
               <button class="text-button" id="copyPassword" type="button">Copy password</button>
               <a class="text-button" id="openDashboard" href="../dashboard.html" target="_blank" rel="noreferrer">Open</a>
             </div>
+          </section>
+
+          <section class="payment-request-panel compact-section" aria-label="Payment request">
+            <div class="section-row">
+              <div>
+                <p class="eyebrow">Payment</p>
+                <h3>Continue development request</h3>
+                <p class="helper-copy">
+                  After the first preview is ready, send the client a payment email and show the payment notice on their dashboard.
+                </p>
+              </div>
+              <button class="solid-button" id="askForPayment" type="button">Ask for payment</button>
+            </div>
+            <div class="payment-plan-links" aria-label="Stripe payment links">
+              <label>
+                Starter website link
+                <input id="starterPaymentLink" type="url" autocomplete="off" placeholder="https://buy.stripe.com/..." />
+              </label>
+              <label>
+                Full build link
+                <input id="fullPaymentLink" type="url" autocomplete="off" placeholder="https://buy.stripe.com/..." />
+              </label>
+              <label>
+                Care package link
+                <input id="carePaymentLink" type="url" autocomplete="off" placeholder="https://buy.stripe.com/..." />
+              </label>
+              <button class="text-button" id="savePaymentLinks" type="button">Save payment links</button>
+            </div>
+            <p class="portal-status" id="paymentRequestStatus" role="status" aria-live="polite"></p>
           </section>
 
           <section class="file-request-editor compact-section" aria-labelledby="fileRequestEditorTitle">
@@ -214,6 +251,7 @@
       </section>
     </main>
 
-    <script src="admin.js?v=3"></script>
+    <script src="contact-config.js"></script>
+    <script src="admin.js?v=4"></script>
   </body>
 </html>

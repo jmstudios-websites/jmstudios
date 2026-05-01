@@ -1,6 +1,7 @@
 const ADMIN_SLUG = "hdlxmpfpfmxwdvbvvu";
 const ADMIN_PASSWORD_HASH = "3061b5d003ab7dcc019a1134695197a7a4c62215d23cac10f725c7222ca47be5";
 const pathAllowsAdmin = window.location.pathname.toLowerCase().includes(`/${ADMIN_SLUG}/`);
+const paymentSettingsKey = "jmStudiosPaymentLinks";
 
 if (!pathAllowsAdmin) {
   document.body.innerHTML = `
@@ -37,6 +38,10 @@ const previewAddress = document.querySelector("#previewAddress");
 const browserPreviewShell = document.querySelector("#browserPreviewShell");
 const adminPreviewNotes = document.querySelector("#adminPreviewNotes");
 const adminAnnotationList = document.querySelector("#adminAnnotationList");
+const paymentRequestStatus = document.querySelector("#paymentRequestStatus");
+const starterPaymentLink = document.querySelector("#starterPaymentLink");
+const fullPaymentLink = document.querySelector("#fullPaymentLink");
+const carePaymentLink = document.querySelector("#carePaymentLink");
 
 installAdminGate();
 
@@ -51,6 +56,18 @@ const starterTasks = [
   { title: "Responsive build", state: "Not started" },
   { title: "Launch checks", state: "Not started" },
 ];
+
+const paymentPlans = {
+  starter: "Starter website",
+  full: "Full website build",
+  care: "Care package",
+};
+
+const defaultPaymentLinks = {
+  starter: "https://buy.stripe.com/test_8x2bJ33K422jgl6emF83C00",
+  full: "https://buy.stripe.com/test_5kQ8wR1BW5evc4Q0vP83C01",
+  care: "https://buy.stripe.com/test_3cI5kFdkE5ev2ugbat83C02",
+};
 
 const starterFileRequests = [
   {
@@ -133,6 +150,32 @@ function loadProjects() {
   } catch (error) {
     return [];
   }
+}
+
+function loadPaymentLinks() {
+  try {
+    return { ...defaultPaymentLinks, ...(JSON.parse(localStorage.getItem(paymentSettingsKey)) || {}) };
+  } catch (error) {
+    return { ...defaultPaymentLinks };
+  }
+}
+
+function savePaymentLinks() {
+  const links = {
+    starter: starterPaymentLink.value.trim(),
+    full: fullPaymentLink.value.trim(),
+    care: carePaymentLink.value.trim(),
+  };
+  localStorage.setItem(paymentSettingsKey, JSON.stringify(links));
+  setPaymentStatus("Payment links saved.");
+  return links;
+}
+
+function renderPaymentLinks() {
+  const links = loadPaymentLinks();
+  starterPaymentLink.value = links.starter || "";
+  fullPaymentLink.value = links.full || "";
+  carePaymentLink.value = links.care || "";
 }
 
 function saveProjects() {
@@ -234,6 +277,10 @@ function createProject() {
     dueDate: "",
     status: "Quote sent",
     previewUrl: "",
+    paymentPlan: "starter",
+    paymentUrl: "",
+    paymentPlanName: "",
+    paymentRequestedAt: "",
     overview: "Your project dashboard will show the current status, review link, and checklist as the website moves forward.",
     tasks: starterTasks,
     setupChecks: defaultSetupChecks,
@@ -294,6 +341,7 @@ function fillForm(project) {
   form.dueDate.value = project.dueDate || "";
   form.status.value = project.status || "Quote sent";
   form.previewUrl.value = project.previewUrl || "";
+  form.paymentPlan.value = project.paymentPlan || "starter";
   form.overview.value = project.overview || "";
   editorTitle.textContent = project.projectName || "New client dashboard";
   renderSetupChecks(normalizeSetupChecks(project.setupChecks));
@@ -465,6 +513,7 @@ function render() {
   if (!projects.some((project) => project.id === activeId)) activeId = projects[0]?.id || null;
   if (!projects.length) createProject();
   const project = getActiveProject();
+  renderPaymentLinks();
   renderList();
   fillForm(project);
   renderDashboardAccess(project);
@@ -822,6 +871,74 @@ async function copyText(value, message) {
   }
 }
 
+function setPaymentStatus(message) {
+  paymentRequestStatus.textContent = message;
+  window.clearTimeout(setPaymentStatus.timer);
+  setPaymentStatus.timer = window.setTimeout(() => {
+    paymentRequestStatus.textContent = "";
+  }, 4200);
+}
+
+async function askForPayment() {
+  const project = projectFromForm();
+  const selectedPlan = project.paymentPlan || "starter";
+  const paymentLinks = savePaymentLinks();
+  const paymentUrl = paymentLinks[selectedPlan] || "";
+  const planName = paymentPlans[selectedPlan] || "Website payment";
+
+  if (!project.clientEmail) {
+    setPaymentStatus("Add the client email before asking for payment.");
+    return;
+  }
+
+  if (!paymentUrl) {
+    setPaymentStatus(`Add the ${planName} Stripe payment link first.`);
+    return;
+  }
+
+  const endpoint = window.JM_CONTACT_ENDPOINT || "/api/contact";
+  const paymentRequestedAt = new Date().toISOString();
+  const nextProject = {
+    ...project,
+    paymentUrl,
+    paymentPlanName: planName,
+    paymentRequestedAt,
+    updatedAt: paymentRequestedAt,
+  };
+  const index = projects.findIndex((savedProject) => savedProject.id === activeId);
+  projects[index] = nextProject;
+
+  if (!saveProjects()) return;
+  renderDashboardAccess(nextProject);
+  renderList();
+  fillForm(nextProject);
+
+  setPaymentStatus("Sending payment request email.");
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "payment-request",
+        clientName: nextProject.clientName,
+        clientEmail: nextProject.clientEmail,
+        projectName: nextProject.projectName,
+        planName: nextProject.paymentPlanName,
+        dashboardUrl: dashboardLink.value,
+        paymentUrl: nextProject.paymentUrl,
+      }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(result.details || result.error || "Payment email could not be sent.");
+    }
+    setPaymentStatus("Payment request sent and dashboard notice is live.");
+  } catch (error) {
+    setPaymentStatus(`Dashboard notice is live, but email failed: ${error.message}`);
+  }
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const nextProject = projectFromForm();
@@ -843,6 +960,8 @@ form.slug.addEventListener("input", () => {
 
 document.querySelector("#newProject").addEventListener("click", createProject);
 document.querySelector("#addTask").addEventListener("click", () => addTaskRow());
+document.querySelector("#askForPayment").addEventListener("click", askForPayment);
+document.querySelector("#savePaymentLinks").addEventListener("click", savePaymentLinks);
 document.querySelector("#addFileRequest").addEventListener("click", () => {
   addFileRequestRow({
     id: uid(),
