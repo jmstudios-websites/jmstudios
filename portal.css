@@ -863,8 +863,8 @@ textarea:focus {
   background: linear-gradient(135deg, rgba(239, 245, 250, 0.98), rgba(255, 255, 255, 0.94));
 }
 
-.payment-banner span,
-.client-request-banner span {
+.payment-banner > div > span,
+.client-request-banner > div > span {
   display: block;
   margin-bottom: 8px;
   color: var(--navy);
@@ -889,6 +889,62 @@ textarea:focus {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.55;
+}
+
+.payment-terms-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 680px;
+  margin-top: 14px;
+  color: var(--navy-deep);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.payment-terms-row input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  accent-color: var(--navy);
+}
+
+.payment-terms-row a {
+  color: var(--navy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.payment-terms-row.needs-attention {
+  animation: termsNudge 320ms ease-out 2;
+}
+
+.payment-terms-status {
+  display: block;
+  min-height: 18px;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.solid-button.is-disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+  filter: grayscale(0.15);
+}
+
+@keyframes termsNudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(5px);
+  }
 }
 
 .payment-sticky-reminder,

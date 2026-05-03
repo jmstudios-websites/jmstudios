@@ -16,6 +16,8 @@ const clientAnnotationList = document.querySelector("#clientAnnotationList");
 const clientFileRequestList = document.querySelector("#clientFileRequestList");
 const clientRequestBanner = document.querySelector("#clientRequestBanner");
 const clientRequestStickyReminder = document.querySelector("#clientRequestStickyReminder");
+const paymentTermsAccepted = document.querySelector("#paymentTermsAccepted");
+const paymentTermsStatus = document.querySelector("#paymentTermsStatus");
 let previewObjectUrls = [];
 let activeProject = null;
 let annotationMode = false;
@@ -183,20 +185,38 @@ function renderPaymentBanner(project) {
   const title = document.querySelector("#paymentBannerTitle");
   const reminder = document.querySelector("#paymentStickyReminder");
   const shouldShow = Boolean(project.paymentRequestedAt);
+  const agreedToTerms = loadPaymentTermsAgreement();
   banner.classList.toggle("hidden", !shouldShow);
   reminder.classList.toggle("hidden", !shouldShow);
   title.textContent = project.paymentPlanName
     ? `Pay for the ${project.paymentPlanName} to keep development moving.`
     : "Pay for us to keep developing it.";
+  paymentTermsAccepted.checked = agreedToTerms;
+  paymentTermsStatus.textContent = "";
 
   if (project.paymentUrl) {
     link.href = project.paymentUrl;
     link.classList.remove("hidden");
+    setPaymentLinkEnabled(agreedToTerms);
   } else {
     link.classList.add("hidden");
   }
 
   installPaymentReminderObserver(shouldShow);
+}
+
+function paymentTermsKey() {
+  return `jmPaymentTermsAccepted:${slug || activeProject?.slug || "dashboard"}`;
+}
+
+function loadPaymentTermsAgreement() {
+  return localStorage.getItem(paymentTermsKey()) === "true";
+}
+
+function setPaymentLinkEnabled(isEnabled) {
+  const link = document.querySelector("#paymentLink");
+  link.classList.toggle("is-disabled", !isEnabled);
+  link.setAttribute("aria-disabled", String(!isEnabled));
 }
 
 function renderClientRequest(project) {
@@ -878,6 +898,24 @@ document.querySelector("#scrollToPayment").addEventListener("click", () => {
 document.querySelector("#paymentStickyReminder").addEventListener("click", (event) => {
   if (event.target.closest("button")) return;
   document.querySelector("#paymentBanner").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+paymentTermsAccepted.addEventListener("change", () => {
+  localStorage.setItem(paymentTermsKey(), String(paymentTermsAccepted.checked));
+  setPaymentLinkEnabled(paymentTermsAccepted.checked);
+  paymentTermsStatus.textContent = paymentTermsAccepted.checked
+    ? "Terms accepted. You can continue to payment."
+    : "Agree to the terms before opening payment.";
+});
+
+document.querySelector("#paymentLink").addEventListener("click", (event) => {
+  if (paymentTermsAccepted.checked) return;
+  event.preventDefault();
+  paymentTermsStatus.textContent = "Please agree to the Terms & Conditions before continuing to payment.";
+  document.querySelector("#paymentTermsRow").classList.add("needs-attention");
+  window.setTimeout(() => {
+    document.querySelector("#paymentTermsRow").classList.remove("needs-attention");
+  }, 900);
 });
 
 document.querySelector("#scrollToClientRequest").addEventListener("click", () => {

@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="portal.css?v=8" />
+    <link rel="stylesheet" href="portal.css?v=9" />
   </head>
   <body class="dashboard-body client-dashboard-body">
     <header class="portal-topbar client-topbar">
@@ -53,8 +53,17 @@
                   <span>Payment requested</span>
                   <strong id="paymentBannerTitle">Pay for us to keep developing it.</strong>
                   <p>JM Studios has sent the first working preview. Complete the payment to keep the build moving.</p>
+                  <label class="payment-terms-row" id="paymentTermsRow">
+                    <input id="paymentTermsAccepted" type="checkbox" />
+                    <span>
+                      I agree to the
+                      <a href="terms.html" target="_blank" rel="noreferrer">Terms & Conditions</a>
+                      before continuing.
+                    </span>
+                  </label>
+                  <small class="payment-terms-status" id="paymentTermsStatus" aria-live="polite"></small>
                 </div>
-                <a class="solid-button hidden" id="paymentLink" href="#" target="_blank" rel="noreferrer">Pay with Stripe</a>
+                <a class="solid-button hidden is-disabled" id="paymentLink" href="#" target="_blank" rel="noreferrer" aria-disabled="true">Pay with Stripe</a>
               </article>
               <aside class="payment-sticky-reminder hidden" id="paymentStickyReminder" aria-live="polite">
                 <span>Payment is required to continue development.</span>
@@ -178,6 +187,6 @@
       </section>
     </main>
 
-    <script src="dashboard.js?v=10"></script>
+    <script src="dashboard.js?v=11"></script>
   </body>
 </html>
